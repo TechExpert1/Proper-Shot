@@ -1,9 +1,12 @@
 const express = require('express');
 const photoRouter = express.Router();
-const photoController = require('../controllers/photoController');
+// const photoController = require('../controllers/photoController');
+const { createPhoto,getGalleryPhotos, getRecentPhotos, upload } = require('../controllers/photoController');
 
-photoRouter.get('/gallery', photoController.getGalleryPhotos);
-photoRouter.get('/recent', photoController.getRecentPhotos);
-photoRouter.post('/create', photoController.createPhoto);
+//routes
+photoRouter.post('/create', upload.single('file'),createPhoto);
+photoRouter.get('/gallery', getGalleryPhotos);
+photoRouter.get('/recent', getRecentPhotos);
+
 
 module.exports = photoRouter;
