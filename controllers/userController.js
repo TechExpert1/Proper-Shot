@@ -19,6 +19,9 @@ const userSignUp = async (req, res)=>{
         if(email !== email.toLowerCase()){
             return res.status(400).json({message: "Email must be in lowercase"})
         }
+        if(phoneNumber.length === 11 || phoneNumber.length === 13){
+          return res.status(400).json({message: "Invalid! Phone Number should be 11 or 13 digits "})
+        }
         if(req.body.password .length < 8){
             return res.status(400).json({message: "Password should be at least 8 characters"})
         }
@@ -71,7 +74,7 @@ const userLogin = async (req, res) => {
         }
         const { password, ...others } = existingUser._doc;
         const token = await jwt.sign({email:existingUser.email, id:existingUser._id},SecretKey)
-        return res.status(200).json({...others , token})
+        return res.status(200).json({message: "User Logged-In Successfully!", user: others, token})
     } catch (error) {
       console.log("Error : ", error);
         return res.status(500).json({message: "Server error: " + error.message})

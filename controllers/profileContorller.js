@@ -1,9 +1,9 @@
+const userModel = require('../models/userModel')
 const multer  = require('multer');
 const dotenv =  require('dotenv');
 const path = require('path');
 dotenv.config()
 
-const userModel = require('../models/userModel')
 const { S3Client } = require("@aws-sdk/client-s3");
 const multerS3 = require('multer-s3');
 const s3 = new S3Client({
@@ -52,18 +52,22 @@ const updateProfile = async (req, res) => {
           if (!user) {
               return res.status(404).json({ error: 'User not found' });
           }
-          console.log(req.user.id);
     let updatedFields = req.body;
     if (req.file) {
              updatedFields.profileImage = req.file?.location
-            }
-
-    // if (req.file) {
-    //   user.profileImage = req.file.location; // Use req.file.location to get the S3 file URL
-    //   updatedFields.profileImage = req.file.location; // Include profileImage in updated fields
-    // }
-    console.log("🚀 ~ exports.updateProfile= ~ updatedFields:", updatedFields)
-
+    }
+    if(req.body.phoneNumber.length == 11 || req.body.phoneNumber.length == 13 ){
+      return res.status(400).json({message: "Invalid! Phone Number should be 11 or 13 digits "})
+    }
+    if (req.body.password && req.body.confirmPassword) {
+      if (req.body.password !== req.body.confirmPassword) {
+        return res.status(400).json({ message: "Password Not Matched" });
+      }
+      
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(req.body.password, salt);
+      updatedFields.password = hashedPassword;
+    }
     const updateUser = await userModel.findByIdAndUpdate(
       req.user.id,
       { $set: updatedFields},
@@ -74,8 +78,7 @@ const updateProfile = async (req, res) => {
       return res.status(401).json({ code: 401, error: "User not found" });
     
     const {password, ...other} = JSON.parse(JSON.stringify(updateUser));
-
-    res.status(200).json({ code: 200, message: "User updated successfully" ,updateUser:{...other}});
+    return res.status(200).json({ code: 200, message: "User updated successfully" ,updateUser:{...other}});
   } catch (error) {
     console.log(error);
     res.status(500).json({ code: 500, error: "Error While Updating Data" });

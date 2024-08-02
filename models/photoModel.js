@@ -1,18 +1,16 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const photoSchema = new mongoose.Schema({
-  
-  url: String,
-  createdAt: {
-    type: Date,
-    default: Date.now
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
   },
-  isRecent: {
-    type: Boolean,
-    default: false
-  }
-});
+  isEdited: { type: Boolean, default: false },
+  // createdAt: { type: Date, default: Date.now },
+  // editedAt: { type: Date, default: null },
+  picture_url: {type: String},
+},
+{timestamps: true});
 
-const Photo = mongoose.model('Photo', photoSchema);
-
-module.exports = Photo;
+module.exports = mongoose.model("Photo", photoSchema);

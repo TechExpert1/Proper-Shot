@@ -13,7 +13,7 @@ const authorizationMiddleware = async (req, res, next) => {
       return res.status(401).json({ message: 'Unauthorized access' });
     }
     req.user = userId;
-    console.log("🚀 ~ authorizationMiddleware ~ req.user:", req.user)
+    // console.log("🚀 ~ authorizationMiddleware ~ req.user:", req.user)
     next();
   } catch (error) {
     return res.status(401).json({ message: 'Unauthorized access' });
