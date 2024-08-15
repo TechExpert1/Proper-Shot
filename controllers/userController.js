@@ -13,12 +13,10 @@ const accountMail = require("../utils/sendEmail");
 const userSignUp = async (req, res)=>{
     try {
         const {name, email, phoneNumber, confirmPassword} = req.body;
-        // if(!name || !email || phoneNumber || !req.body.password  || !req.body.confirmPassword){
-        //     return res.status(400).json({message: "Please fill all the fields"})
+        // if(email !== email.toLowerCase()){
+        //     return res.status(400).json({message: "Email must be in lowercase"})
         // }
-        if(email !== email.toLowerCase()){
-            return res.status(400).json({message: "Email must be in lowercase"})
-        }
+      
         if(phoneNumber.length === 11 || phoneNumber.length === 13){
           return res.status(400).json({message: "Invalid! Phone Number should be 11 or 13 digits "})
         }
@@ -48,7 +46,7 @@ const userSignUp = async (req, res)=>{
 
         
         const token = await jwt.sign({email: saveUser.email, id: saveUser._id}, SecretKey)
-        return res.status(200).json({message: "User Registered Successfully!", user: others, token})
+        return res.status(200).json({...others, token})
     } catch (error) {
         console.log(error);
         return res.status(500).json({message: "Internal Server Eroor", error})
@@ -74,7 +72,8 @@ const userLogin = async (req, res) => {
         }
         const { password, ...others } = existingUser._doc;
         const token = await jwt.sign({email:existingUser.email, id:existingUser._id},SecretKey)
-        return res.status(200).json({message: "User Logged-In Successfully!", user: others, token})
+                 
+        return res.status(200).json({...others, token})
     } catch (error) {
       console.log("Error : ", error);
         return res.status(500).json({message: "Server error: " + error.message})
@@ -160,6 +159,46 @@ const resetPassword = async (req, res) => {
   };
 
 
+//Subscription Module
 
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
+const subscription = async(req, res)=>{
+    try {
+      const userId = groupid; // or any relevant user identifier
 
-module.exports = {userSignUp, userLogin, forgotPassword, VerifyOTP, resetPassword}
+      // Fetch the current user record to get the wallet balance
+      const user = await userModel.findById(userId);
+      let balance = user.walletBalance;
+      
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: amount * 100,
+        currency: "usd",
+        payment_method: "pm_card_visa",
+        payment_method: paymentMethodId,
+        confirm: true,
+        automatic_payment_methods: {
+          enabled: true,
+          allow_redirects: "never",
+        },
+      });
+      
+      if (paymentIntent && paymentIntent.status === 'succeeded') {
+        // Deduct the amount from wallet balance
+        balance -= amount;
+      
+        // Update wallet balance and group status
+        await userModel.findByIdAndUpdate(userId, {
+          walletBalance: balance,
+          isGroupActive: true
+        });
+      
+        console.log("Payment successful and user model updated.");
+      } else {
+        console.log("Payment failed or not confirmed.");
+      }
+    } catch (error) {
+      
+    }
+  }
+
+module.exports = {userSignUp, userLogin, forgotPassword, VerifyOTP, resetPassword, subscription}

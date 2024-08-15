@@ -27,7 +27,66 @@ const userModel = mongoose.Schema({
     profileImage: {
         type: String,
         default: ""
-      }
-}, {timestamps: true})
+      },
+
+    // Subscription
+    stripeAccountId: {
+        type: String
+    },
+    payoutsEnabled: {
+        type: Boolean
+    },
+    externalAccountId: {
+        type: String
+    },
+    account_plan: {
+        type: String,
+    },
+    plan_id: {
+        type: String
+    },
+    subscription_id: {
+        type: String
+    },
+    subscription_status: {
+        type: String
+    },
+
+    // Payment Details
+    amount: {
+        type: Number,
+    },
+    currency: {
+        type: String,
+    },
+    payment_method: {
+        type: String,
+    },
+    payment_type: {
+        type: String,
+        default: 'one-time',
+    },
+    success_url: {
+        type: String,
+    },
+    cancel_url: {
+        type: String,
+    },
+    stripeSessionId: {
+        type: String,
+    },
+    confirm: {  
+        type: Boolean,
+    },
+    automatic_payment_methods: {
+        enabled: {
+            type: Boolean
+        },
+        allow_redirects: {
+            type: String,
+        }
+    }
+
+}, {timestamps: true});
 
 module.exports = mongoose.model('User', userModel);

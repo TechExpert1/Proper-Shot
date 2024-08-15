@@ -46,7 +46,7 @@ const upload = multer({ storage: storage });
 //updating user profile...
 const createPhoto = async (req, res) => {
   try {
-    const galleryPictures = req.body
+    // const galleryPictures = req.body
     const user = await userModel.findById(req.user.id);
     console.log("🚀 ~= ~ req.user.id:", req.user.id);
     if (!user) {
@@ -90,11 +90,10 @@ const getGalleryPhotos = async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
-};
+}
 
 
-
-const getRecentEditedPhotos = async (req, res) => {
+const getRecentPhotos = async (req, res) => {
   try {
     const user = await userModel.findById(req.user.id);
     console.log("🚀 ~= ~ req.user.id:", req.user.id);
@@ -113,7 +112,7 @@ const getRecentEditedPhotos = async (req, res) => {
       console.log("🚀 ~ getRecentPhotos ~ recentPhotos:", recentPhotos)
       return res.status(404).jsone({message: "Recent Photos not found by this userID"})
     }
-    return res.status(200).json({message: " Recent Edited Photos " , recentPhotos});
+    return res.status(200).json({message: " Recent Photos " , recentPhotos});
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -145,38 +144,15 @@ const getAllEditedPhotos = async (req, res) => {
 
 
 
-
-// //delete single photo
-// const deletePhoto = async(req, res)=>{
-//   try {
-//     const photoId = req.params.id
-//     const user = await userModel.find({userId: req.user.id})
-//     if(!user){
-//       return res.status(404).json({message: "User not exist by this id"})
-//     }
-//     const deletedPhoto = await photoModel.findByIdAndDelete(photoId)
-//     if(!deletedPhoto){
-//       return res.status(404).json({message: "Photo not exist by this id"})
-//     }
-//     return res.status(200).json({message: "Photo Deleted", deletedPhoto})
-
-//   } catch (error) {
-//     console.log("Error ", error)
-//     return res.status(500).json({message: "Internal Server Error"})
-//   }
-// }
-
 const deletePhoto = async (req, res) => {
   try {
     // const S3_BUCKET = process.env.S3_BUCKET_NAME;
     const photoId = req.params.id;
     console.log("******* ID: ", photoId);
-
     const user = await userModel.findById(req.user.id);
     if (!user) {
       return res.status(404).json({ message: "User not found by this ID" });
     }
-
     const photo = await photoModel.findById(photoId);
     if (!photo) {
       return res.status(404).json({ message: "Photo not found by this ID" });
@@ -185,26 +161,20 @@ const deletePhoto = async (req, res) => {
    // Extract the key of the photo stored in S3 from the URL
    const s3Url = new URL(photo.picture_url);
    const s3Key = s3Url.pathname.startsWith('/') ? s3Url.pathname.substring(1) : s3Url.pathname;
-
    console.log("S3 Key: ", s3Key);
     // Delete the photo from S3
     const params = {
       Bucket: process.env.S3_BUCKET_NAME,
       Key: s3Key,
     };
-
-    
     // Delete the photo from MongoDB
     const deletedPhoto = await photoModel.findByIdAndDelete(photoId);
-
     if (!deletedPhoto) {
       return res.status(404).json({ message: "Photo not found by this ID" });
     }
-
     await s3.send(new DeleteObjectCommand(params));
     return res.status(200).json({ message: "Photo deleted successfully", deletedPhoto });
-    
-
+  
   } catch (error) {
     console.log("Error: ", error);
     return res.status(500).json({ message: "Internal Server Error" });
@@ -212,6 +182,5 @@ const deletePhoto = async (req, res) => {
 };
 
 
+module.exports = { createPhoto, getRecentPhotos, getGalleryPhotos,getAllEditedPhotos,  deletePhoto, upload };
 
-
-module.exports = { createPhoto, getRecentEditedPhotos, getGalleryPhotos,getAllEditedPhotos,  deletePhoto, upload };

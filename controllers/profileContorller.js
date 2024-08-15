@@ -2,6 +2,7 @@ const userModel = require('../models/userModel')
 const multer  = require('multer');
 const dotenv =  require('dotenv');
 const path = require('path');
+const bcrypt = require('bcryptjs')
 dotenv.config()
 
 const { S3Client } = require("@aws-sdk/client-s3");
@@ -42,23 +43,43 @@ const storage =   multerS3({
 });
 const upload = multer({ storage: storage });
 
-
-//updating user profile...
+//updating user details
 const updateProfile = async (req, res) => {
   try {
     const user = await userModel.findById(req.user.id);
-          console.log("🚀 ~ exports.updateProfile= ~ req.user.id:", req.user.id)
-          console.log("🚀 ~ exports.updateProfile= ~ user:", user)
-          if (!user) {
-              return res.status(404).json({ error: 'User not found' });
-          }
-    let updatedFields = req.body;
+    console.log("🚀 ~ exports.updateProfile= ~ req.user.id:", req.user.id);
+    console.log("🚀 ~ exports.updateProfile= ~ user:", user);
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    let updatedFields = {};
+
+    // Update profile image if provided
     if (req.file) {
-             updatedFields.profileImage = req.file?.location
+      updatedFields.profileImage = req.file.location;
     }
-    if(req.body.phoneNumber.length == 11 || req.body.phoneNumber.length == 13 ){
-      return res.status(400).json({message: "Invalid! Phone Number should be 11 or 13 digits "})
+
+    // Update name if provided
+    if (req.body.name) {
+      updatedFields.name = req.body.name;
     }
+
+    // Update country if provided
+    if (req.body.country) {
+      updatedFields.country = req.body.country;
+    }
+
+    // Update phone number if provided
+    if (req.body.phoneNumber) {
+      if (req.body.phoneNumber.length !== 11 && req.body.phoneNumber.length !== 13) {
+        return res.status(400).json({ message: "Invalid! Phone Number should be 11 or 13 digits" });
+      }
+      updatedFields.phoneNumber = req.body.phoneNumber;
+    }
+
+    // Update password if provided
     if (req.body.password && req.body.confirmPassword) {
       if (req.body.password !== req.body.confirmPassword) {
         return res.status(400).json({ message: "Password Not Matched" });
@@ -68,22 +89,32 @@ const updateProfile = async (req, res) => {
       const hashedPassword = await bcrypt.hash(req.body.password, salt);
       updatedFields.password = hashedPassword;
     }
-    const updateUser = await userModel.findByIdAndUpdate(
-      req.user.id,
-      { $set: updatedFields},
-      { new: true }
-    );
-    console.log("🚀 ~ exports.updateProfile= ~ updateUser:", updateUser)
-    if (!updateUser)
-      return res.status(401).json({ code: 401, error: "User not found" });
-    
-    const {password, ...other} = JSON.parse(JSON.stringify(updateUser));
-    return res.status(200).json({ code: 200, message: "User updated successfully" ,updateUser:{...other}});
+
+    // If there are fields to update, proceed with update
+    if (Object.keys(updatedFields).length > 0) {
+      const updateUser = await userModel.findByIdAndUpdate(
+        req.user.id,
+        { $set: updatedFields },
+        { new: true }
+      );
+      console.log("🚀 ~ exports.updateProfile= ~ updateUser:", updateUser);
+
+      if (!updateUser) {
+        return res.status(401).json({ code: 401, error: "User not found" });
+      }
+      
+      const { password, ...other } = JSON.parse(JSON.stringify(updateUser));
+      return res.status(200).json({ code: 200, message: "User updated successfully", updateUser: { ...other } });
+    } else {
+      return res.status(400).json({ code: 400, message: "No fields provided for update" });
+    }
+
   } catch (error) {
     console.log(error);
     res.status(500).json({ code: 500, error: "Error While Updating Data" });
   }
 };
+
 
 
 module.exports = {updateProfile, upload}
