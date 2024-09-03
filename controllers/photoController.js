@@ -1,4 +1,4 @@
-const photoModel = require("../models/photoModel"); // Make sure to adjust the path to your Photo model
+const photoModel = require("../models/photoModel"); 
 const multer = require("multer");
 const dotenv = require("dotenv");
 const path = require("path");
