@@ -11,8 +11,8 @@ userRouter.post('/login', userLogin);
 
 
 //password routes
-userRouter.post('/forgot-password',authorizationMiddleware, forgotPassword);
-userRouter.post('/verify-otp',authorizationMiddleware, VerifyOTP);
-userRouter.post('/reset-password',authorizationMiddleware, resetPassword);
+userRouter.post('/forgot-password', forgotPassword);
+userRouter.post('/verify-otp', VerifyOTP);
+userRouter.post('/reset-password', resetPassword);
 
 module.exports = userRouter

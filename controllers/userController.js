@@ -36,20 +36,17 @@ const userSignUp = async (req, res)=>{
           // Normalize the email format
         const trimmedEmail = email.trim();
         const lowercaseEmail = trimmedEmail.toLowerCase();
-    
-        // Regular expression to validate the email format
-        // This regex allows only common TLDs like .com, .net, .org, etc.
         const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.(com|org|net|edu|gov|mil|int)$/;
         if (!emailRegex.test(lowercaseEmail)) {
           return res.status(400).json({ message: "Invalid email format" });
         }
         
-        const normalizedPhoneNumber = normalizePhoneNumber(phoneNumber);
-        if(normalizedPhoneNumber.length !== 13){
-          return res.status(400).json({ message: "Invalid Phone Number format." });
-        }
+        // const normalizedPhoneNumber = normalizePhoneNumber(phoneNumber);
+        // if(normalizedPhoneNumber.length !== 13){
+        //   return res.status(400).json({ message: "Invalid Phone Number format." });
+        // }
          // Check if the phone number is already in use
-        const existingPhoneNumberUser = await userModel.findOne({ phoneNumber: normalizedPhoneNumber });
+        const existingPhoneNumberUser = await userModel.findOne({ phoneNumber });
         if (existingPhoneNumberUser) {
           return res.status(400).json({ message: "This phone number is already in use" });
         }
@@ -60,19 +57,15 @@ const userSignUp = async (req, res)=>{
         if (req.body.password  !== confirmPassword){
             return res.status(400).json({message: "Password Not Matched"})
         }
-        //Check if the user is already signed up
         const existingUser = await userModel.findOne({email: email.toLowerCase()})
         if(existingUser){
             return res.status(400).json({message: "Email already in use"})
         }
-        
-        //Hash the password
         const hashedPassword = await bcrypt.hash(req.body.password , 10)
-        //finally creating user in db
         const newUser = new userModel({
             name: name,
             email: email.toLowerCase(),
-            phoneNumber: normalizedPhoneNumber,
+            phoneNumber,
             password: hashedPassword,
             confirmPassword: hashedPassword
         })
