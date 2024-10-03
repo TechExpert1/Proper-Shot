@@ -30,7 +30,7 @@ const userSignUp = async (req, res)=>{
     try {
         const {name, email, phoneNumber, confirmPassword} = req.body;
       
-        if(!name || !email || !phoneNumber || !req.body.password || !req.body.confirmPassword){
+        if(!name || !email || !phoneNumber || !req.body.password){
           return res.status(400).json({message: "Please fill in all fields"})
         }
           // Normalize the email format
