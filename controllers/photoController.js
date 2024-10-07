@@ -3,68 +3,23 @@ const multer = require("multer");
 const dotenv = require("dotenv");
 const path = require("path");
 dotenv.config();
-
 const userModel = require("../models/userModel");
-const { S3Client , DeleteObjectCommand} = require("@aws-sdk/client-s3");
-const multerS3 = require("multer-s3");
-const { url } = require("inspector");
-const s3 = new S3Client({
-  credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-  },
-  region: process.env.AWS_REGION,
-});
 
-// Multer configuration for file upload
-const storage = multerS3({
-  s3: s3,
-  bucket: process.env.S3_BUCKET_NAME,
-  metadata: function (req, file, cb) {
-    cb(null, { fieldName: file.fieldname });
-  },
-  key: function (req, file, cb) {
-    const ext = path.extname(file.originalname);
-    const filename = `${Date.now().toString()}${ext}`;
-    cb(null, filename);
-  },
-
-  limits: {
-    fileSize: 1024 * 1024 * 5, // 5 MB
-  },
-  fileFilter: function (req, file, cb) {
-    const allowedMimeTypes = ["image/jpeg", "image/png", "image/gif"];
-    if (allowedMimeTypes.includes(file.mimetype)) {
-      cb(null, true);
-    } else {
-      cb(new Error("Invalid file type"));
-    }
-  },
-});
-const upload = multer({ storage: storage });
-
-//updating user profile...
 const createPhoto = async (req, res) => {
   try {
-    // const galleryPictures = req.body
     const user = await userModel.findById(req.user.id);
-    console.log("🚀 ~= ~ req.user.id:", req.user.id);
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
     let uploadPicture = req.file;
-    console.log("🚀 ~ createPhoto ~ uploadPicture:", uploadPicture)
     if (req.file) {
       uploadPicture.pictures = req.file?.location;
     }
-
     const UserPictures = new photoModel({
       userId: req.user.id,
       picture_url: uploadPicture.location,
     });
-
     await UserPictures.save()
-
     return res.status(200).json({ code: 200, message: "Picture uploaded" , UserPictures});
   } catch (error) {
     console.log(error);
@@ -76,7 +31,6 @@ const createPhoto = async (req, res) => {
 const getGalleryPhotos = async (req, res) => {
   try {
     const user = await userModel.findById(req.user.id);
-    console.log("🚀 ~= ~ req.user.id:", req.user.id);
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
@@ -100,13 +54,8 @@ const getRecentPhotos = async (req, res) => {
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
-    // const twoDaysAgo = new Date();
-    // twoDaysAgo.setHours(twoDaysAgo.getHours() - 48);
-    // console.log("🚀 ~ getRecentPhotos ~ twoDaysAgo:", twoDaysAgo);
-    
     const recentPhotos = await photoModel.find({ 
       userId: req.user.id, 
-      // createdAt:{$gte:twoDaysAgo},
     }).sort({createdAt:-1});
     if(!recentPhotos){
       console.log("🚀 ~ getRecentPhotos ~ recentPhotos:", recentPhotos)
@@ -117,9 +66,6 @@ const getRecentPhotos = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
-
-
-
 //get all edited photos....
 const getAllEditedPhotos = async (req, res) => {
   try {
@@ -140,10 +86,6 @@ const getAllEditedPhotos = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
-///
-
-
-
 const deletePhoto = async (req, res) => {
   try {
     // const S3_BUCKET = process.env.S3_BUCKET_NAME;
@@ -182,5 +124,5 @@ const deletePhoto = async (req, res) => {
 };
 
 
-module.exports = { createPhoto, getRecentPhotos, getGalleryPhotos,getAllEditedPhotos,  deletePhoto, upload };
+module.exports = { createPhoto, getRecentPhotos, getGalleryPhotos,getAllEditedPhotos,  deletePhoto,  };
 

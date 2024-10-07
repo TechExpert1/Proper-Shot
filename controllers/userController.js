@@ -12,19 +12,15 @@ const accountMail = require("../utils/sendEmail");
 
 //Phone Number Validation
 const normalizePhoneNumber = (phoneNumber) => {
-  // If the phone number starts with '03', convert it to the international format '+923'
+
   if (phoneNumber.startsWith('03')) {
     return phoneNumber.replace(/^03/, '+923');
   }
-  // If the phone number starts with '+92', accept it directly
   if (phoneNumber.startsWith('+92')) {
     return phoneNumber;
   }
-  // If the phone number does not match expected formats, you might want to handle it or return null
   return null;
 };
-
-
 //Signup
 const userSignUp = async (req, res)=>{
     try {
@@ -33,19 +29,10 @@ const userSignUp = async (req, res)=>{
         if(!name || !email || !phoneNumber || !req.body.password){
           return res.status(400).json({message: "Please fill in all fields"})
         }
-          // Normalize the email format
         const trimmedEmail = email.trim();
         const lowercaseEmail = trimmedEmail.toLowerCase();
-        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.(com|org|net|edu|gov|mil|int)$/;
-        if (!emailRegex.test(lowercaseEmail)) {
-          return res.status(400).json({ message: "Invalid email format" });
-        }
+      
         
-        // const normalizedPhoneNumber = normalizePhoneNumber(phoneNumber);
-        // if(normalizedPhoneNumber.length !== 13){
-        //   return res.status(400).json({ message: "Invalid Phone Number format." });
-        // }
-         // Check if the phone number is already in use
         const existingPhoneNumberUser = await userModel.findOne({ phoneNumber });
         if (existingPhoneNumberUser) {
           return res.status(400).json({ message: "This phone number is already in use" });
@@ -81,8 +68,6 @@ const userSignUp = async (req, res)=>{
     }
 }
 
-
-
 //Loign the User
 const userLogin = async (req, res) => {
     const {email} = req.body
@@ -90,12 +75,8 @@ const userLogin = async (req, res) => {
         if(!email || !req.body.password) {
             return res.status(400).json({message: "Please enter all required information"})
         }
-          // Normalize the email format
           const trimmedEmail = email.trim();
           const lowercaseEmail = trimmedEmail.toLowerCase();
-      
-          // Regular expression to validate the email format
-          // This regex allows only common TLDs like .com, .net, .org, etc.
           const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.(com|org|net|edu|gov|mil|int)$/;
           if (!emailRegex.test(lowercaseEmail)) {
             return res.status(400).json({ message: "Invalid email format" });
@@ -118,9 +99,6 @@ const userLogin = async (req, res) => {
         return res.status(500).json({message: "Server error: " + error.message})
     }
 }
-
-
-
 //Forgot Password
 const forgotPassword = async (req, res) => {
     const { email } = req.body;
@@ -128,10 +106,8 @@ const forgotPassword = async (req, res) => {
       if(!email){
         return res.status(400).json({message:"Please enter an email"})
       }
-        // Normalize the email format
         const trimmedEmail = email.trim();
         const lowercaseEmail = trimmedEmail.toLowerCase();
-   
         const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.(com|org|net|edu|gov|mil|int)$/;
         if (!emailRegex.test(lowercaseEmail)) {
           return res.status(400).json({ message: "Invalid email format" });
@@ -140,7 +116,6 @@ const forgotPassword = async (req, res) => {
          const user = await userModel.findOne({
            email: lowercaseEmail
          });
-
       if (!user) {
         return res.status(401).json({error: "User does not exist by this email" });
       }
@@ -163,7 +138,6 @@ const forgotPassword = async (req, res) => {
     }
   };
 
-
 //Verify OTP
 const VerifyOTP = async (req, res) => {
     try {
@@ -177,8 +151,6 @@ const VerifyOTP = async (req, res) => {
       res.status(500).json({error: "Server Error" });
     }
   };
-
-
 //Reset Password
 const resetPassword = async (req, res) => {
     const password = req.body.password;
@@ -208,10 +180,7 @@ const resetPassword = async (req, res) => {
     }
 
   };
-
-
 //Subscription Module
-
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
 const subscription = async(req, res)=>{
     try {
