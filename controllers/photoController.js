@@ -35,7 +35,7 @@ const getGalleryPhotos = async (req, res) => {
     const { page = 1, limit = 10 } = req.query;
     const user = await userModel.findById(req.user.id);
     if (!user) {
-      return res.status(404).json({ error: "User not found" });
+      return res.status(404).json({ error: "User  not found" });
     }
     const options = {
       sort: { createdAt: -1 },
@@ -52,7 +52,8 @@ const getGalleryPhotos = async (req, res) => {
       message: "All photos",
       galleryPhotos: galleryPhotos.docs,
       totalPages: galleryPhotos.totalPages,
-      currentPage: page
+      currentPage: page,
+      totalDocs: galleryPhotos.totalDocs 
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
