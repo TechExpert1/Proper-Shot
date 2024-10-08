@@ -7,6 +7,7 @@ const userModel = require("../models/userModel");
 
 const createPhoto = async (req, res) => {
   try {
+    const {isEdited} = req.body;
     const user = await userModel.findById(req.user.id);
     if (!user) {
       return res.status(404).json({ error: "User not found" });
@@ -17,6 +18,7 @@ const createPhoto = async (req, res) => {
     }
     const UserPictures = new photoModel({
       userId: req.user.id,
+      isEdited,
       picture_url: uploadPicture.location,
     });
     await UserPictures.save()
@@ -30,17 +32,28 @@ const createPhoto = async (req, res) => {
 //Get All capture and edited photos....
 const getGalleryPhotos = async (req, res) => {
   try {
+    const { page = 1, limit = 10 } = req.query;
     const user = await userModel.findById(req.user.id);
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
-    const galleryPhotos = await photoModel.find({
-      userId: req.user.id,
-    }).sort({createdAt: -1});
-    if(!galleryPhotos){
-      return res.status(404).jsone({message: "Photos not found by this userID"})
+    const options = {
+      sort: { createdAt: -1 },
+      populate: [],
+      lean: true,
+      offset: (page - 1) * limit,
+      limit: limit
+    };
+    const galleryPhotos = await photoModel.paginate({ userId: req.user.id }, options);
+    if (!galleryPhotos.docs) {
+      return res.status(404).json({ message: "Photos not found by this userID" });
     }
-    return res.status(200).json({message: "All photos " , galleryPhotos});
+    return res.status(200).json({
+      message: "All photos",
+      galleryPhotos: galleryPhotos.docs,
+      totalPages: galleryPhotos.totalPages,
+      currentPage: page
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -122,7 +135,26 @@ const deletePhoto = async (req, res) => {
     return res.status(500).json({ message: "Internal Server Error" });
   }
 };
+// update photo
+const updatephoto=async(req,res)=>{
+  try {
+    const photoId = req.params.id;
+    const { isEdited } = req.body;
+    const user = await userModel.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found by this ID" });
+    }
+    const photo = await photoModel.findByIdAndUpdate(photoId, { isEdited }, { new: true });
+    if (!photo) {
+      return res.status(404).json({ message: "Photo not found by this ID" });
+    }
+    return res.status(200).json({ message: "Photo updated successfully", photo });
+  } catch (error) {
+    console.log("Error: ", error);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+ };
 
 
-module.exports = { createPhoto, getRecentPhotos, getGalleryPhotos,getAllEditedPhotos,  deletePhoto,  };
+module.exports = { createPhoto, getRecentPhotos, getGalleryPhotos,getAllEditedPhotos,  deletePhoto,updatephoto  };
 

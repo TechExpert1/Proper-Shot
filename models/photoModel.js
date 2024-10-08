@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-
+const mongoosePaginate = require('mongoose-paginate-v2');
 const photoSchema = new mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
@@ -7,10 +7,9 @@ const photoSchema = new mongoose.Schema({
     required: true,
   },
   isEdited: { type: Boolean, default: false },
-  // createdAt: { type: Date, default: Date.now },
-  // editedAt: { type: Date, default: null },
+ 
   picture_url: {type: String},
 },
 {timestamps: true});
-
+photoSchema.plugin(mongoosePaginate);
 module.exports = mongoose.model("Photo", photoSchema);
