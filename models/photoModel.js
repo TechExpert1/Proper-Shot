@@ -1,6 +1,10 @@
 const mongoose = require("mongoose");
 const mongoosePaginate = require('mongoose-paginate-v2');
 const photoSchema = new mongoose.Schema({
+  name:{
+    type:String,
+    default:"",
+  },
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",

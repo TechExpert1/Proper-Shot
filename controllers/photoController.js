@@ -59,23 +59,32 @@ const getGalleryPhotos = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 }
-
-
 const getRecentPhotos = async (req, res) => {
   try {
+    const { page = 1, limit = 10 } = req.query;
     const user = await userModel.findById(req.user.id);
     console.log("🚀 ~= ~ req.user.id:", req.user.id);
     if (!user) {
-      return res.status(404).json({ error: "User not found" });
+      return res.status(404).json({ error: "User  not found" });
     }
-    const recentPhotos = await photoModel.find({ 
-      userId: req.user.id, 
-    }).sort({createdAt:-1});
-    if(!recentPhotos){
+    const options = {
+      sort: { createdAt: -1 },
+      lean: true,
+      offset: (page - 1) * limit,
+      limit: limit
+    };
+    const recentPhotos = await photoModel.paginate({ userId: req.user.id }, options);
+    if (!recentPhotos.docs) {
       console.log("🚀 ~ getRecentPhotos ~ recentPhotos:", recentPhotos)
-      return res.status(404).jsone({message: "Recent Photos not found by this userID"})
+      return res.status(404).json({ message: "Recent Photos not found by this userID" });
     }
-    return res.status(200).json({message: " Recent Photos " , recentPhotos});
+    return res.status(200).json({
+      message: "Recent Photos",
+      recentPhotos: recentPhotos.docs,
+      totalPages: recentPhotos.totalPages,
+      currentPage: page,
+      totalDocs: recentPhotos.totalDocs
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -83,19 +92,28 @@ const getRecentPhotos = async (req, res) => {
 //get all edited photos....
 const getAllEditedPhotos = async (req, res) => {
   try {
+    const { page = 1, limit = 10 } = req.query;
     const user = await userModel.findById(req.user.id);
-    console.log("🚀 ~= ~ req.user.id:", req.user.id);
     if (!user) {
-      return res.status(404).json({ error: "User not found" });
+      return res.status(404).json({ error: "User  not found" });
     }
-    const editedPhotos = await photoModel.find({
-      userId: req.user.id,
-      isEdited: true,
-    }).sort({createdAt: 1});
-    if(!editedPhotos){
-      return res.status(404).jsone({message: "Photos not found by this userID"})
+    const options = {
+      sort: { createdAt: 1 },
+      lean: true,
+      offset: (page - 1) * limit,
+      limit: limit
+    };
+    const editedPhotos = await photoModel.paginate({ userId: req.user.id, isEdited: true }, options);
+    if (!editedPhotos.docs) {
+      return res.status(404).json({ message: "Photos not found by this userID" });
     }
-    return res.status(200).json({message: "All photos " , editedPhotos});
+    return res.status(200).json({
+      message: "All edited photos",
+      editedPhotos: editedPhotos.docs,
+      totalPages: editedPhotos.totalPages,
+      currentPage: page,
+      totalDocs: editedPhotos.totalDocs
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -137,15 +155,15 @@ const deletePhoto = async (req, res) => {
   }
 };
 // update photo
-const updatephoto=async(req,res)=>{
+const updatephoto = async (req, res) => {
   try {
     const photoId = req.params.id;
-    const { isEdited } = req.body;
+    const { isEdited, name } = req.body;
     const user = await userModel.findById(req.user.id);
     if (!user) {
-      return res.status(404).json({ message: "User not found by this ID" });
+      return res.status(404).json({ message: "User  not found by this ID" });
     }
-    const photo = await photoModel.findByIdAndUpdate(photoId, { isEdited }, { new: true });
+    const photo = await photoModel.findByIdAndUpdate(photoId, { isEdited, name }, { new: true });
     if (!photo) {
       return res.status(404).json({ message: "Photo not found by this ID" });
     }
@@ -154,7 +172,7 @@ const updatephoto=async(req,res)=>{
     console.log("Error: ", error);
     return res.status(500).json({ message: "Internal Server Error" });
   }
- };
+};
 
 
 module.exports = { createPhoto, getRecentPhotos, getGalleryPhotos,getAllEditedPhotos,  deletePhoto,updatephoto  };
