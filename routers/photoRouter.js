@@ -38,7 +38,7 @@ photoRouter.get('/recent',authorizationMiddleware,  getRecentPhotos);
 photoRouter.get('/all-edits',authorizationMiddleware,  getAllEditedPhotos);
 
 photoRouter.delete('/delete/:id', authorizationMiddleware, deletePhoto)
-photoRouter.put("/update/:id",updatephoto)
+photoRouter.put("/update/:id",authorizationMiddleware,updatephoto)
 
 
 module.exports = photoRouter;
