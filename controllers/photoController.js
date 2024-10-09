@@ -7,7 +7,7 @@ const userModel = require("../models/userModel");
 
 const createPhoto = async (req, res) => {
   try {
-    const {isEdited} = req.body;
+    const {isEdited,name} = req.body;
     const user = await userModel.findById(req.user.id);
     if (!user) {
       return res.status(404).json({ error: "User not found" });
@@ -120,9 +120,7 @@ const getAllEditedPhotos = async (req, res) => {
 };
 const deletePhoto = async (req, res) => {
   try {
-    // const S3_BUCKET = process.env.S3_BUCKET_NAME;
     const photoId = req.params.id;
-    console.log("******* ID: ", photoId);
     const user = await userModel.findById(req.user.id);
     if (!user) {
       return res.status(404).json({ message: "User not found by this ID" });
@@ -131,23 +129,18 @@ const deletePhoto = async (req, res) => {
     if (!photo) {
       return res.status(404).json({ message: "Photo not found by this ID" });
     }
-    console.log("Photo key: ", photo)
-   // Extract the key of the photo stored in S3 from the URL
-   const s3Url = new URL(photo.picture_url);
-   const s3Key = s3Url.pathname.startsWith('/') ? s3Url.pathname.substring(1) : s3Url.pathname;
-   console.log("S3 Key: ", s3Key);
-    // Delete the photo from S3
-    const params = {
-      Bucket: process.env.S3_BUCKET_NAME,
-      Key: s3Key,
-    };
-    // Delete the photo from MongoDB
+  //  const s3Url = new URL(photo.picture_url);
+  //  const s3Key = s3Url.pathname.startsWith('/') ? s3Url.pathname.substring(1) : s3Url.pathname;
+  //   const params = {
+  //     Bucket: process.env.S3_BUCKET_NAME,
+  //     Key: s3Key,
+  //   };
     const deletedPhoto = await photoModel.findByIdAndDelete(photoId);
     if (!deletedPhoto) {
       return res.status(404).json({ message: "Photo not found by this ID" });
     }
-    await s3.send(new DeleteObjectCommand(params));
-    return res.status(200).json({ message: "Photo deleted successfully", deletedPhoto });
+    // await s3.send(new DeleteObjectCommand(params));
+    return res.status(200).json({ message: "Photo deleted successfully"});
   
   } catch (error) {
     console.log("Error: ", error);
