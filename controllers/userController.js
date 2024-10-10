@@ -96,6 +96,20 @@ const userLogin = async (req, res) => {
         return res.status(500).json({message: "Server error: " + error.message})
     }
 }
+// controller for getting single user detail
+const find=async (req,res)=>{
+  try {
+    const userId = req.params.id;
+    const user = await userModel.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.status(200).json(user);
+  } catch (error) {
+    console.log("Error : ", error);
+    return res.status(500).json({ message: "Server error: " + error.message });
+  }
+}
 //Forgot Password
 const forgotPassword = async (req, res) => {
     const { email } = req.body;
@@ -218,4 +232,4 @@ const subscription = async(req, res)=>{
     }
   }
 
-module.exports = {userSignUp, userLogin, forgotPassword, VerifyOTP, resetPassword, subscription}
+module.exports = {userSignUp, userLogin, forgotPassword, VerifyOTP, resetPassword, subscription,find}

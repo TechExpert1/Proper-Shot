@@ -17,6 +17,7 @@ const createPhoto = async (req, res) => {
       uploadPicture.pictures = req.file?.location;
     }
     const UserPictures = new photoModel({
+      name,
       userId: req.user.id,
       isEdited,
       picture_url: uploadPicture.location,
@@ -147,26 +148,68 @@ const deletePhoto = async (req, res) => {
     return res.status(500).json({ message: "Internal Server Error" });
   }
 };
-// update photo
-const updatephoto = async (req, res) => {
+// controller for delete multiple image
+const deletebulkimage=async(req,res)=>{
   try {
-    const photoId = req.params.id;
-    const { isEdited, name } = req.body;
+    const photoIds = req.body.photoIds;
     const user = await userModel.findById(req.user.id);
     if (!user) {
-      return res.status(404).json({ message: "User  not found by this ID" });
+      return res.status(404).json({ message: "User not found by this ID" });
     }
-    const photo = await photoModel.findByIdAndUpdate(photoId, { isEdited, name }, { new: true });
-    if (!photo) {
-      return res.status(404).json({ message: "Photo not found by this ID" });
+    const deletedPhotos = await photoModel.deleteMany({ userId: req.user.id, _id: { $in: photoIds } });
+    if (deletedPhotos.deletedCount === 0) {
+      return res.status(404).json({ message: "No photos found by this ID" });
     }
-    return res.status(200).json({ message: "Photo updated successfully", photo });
+    return res.status(200).json({ message: "Photos deleted successfully" });
   } catch (error) {
     console.log("Error: ", error);
     return res.status(500).json({ message: "Internal Server Error" });
   }
+}
+// update photo
+const updatephoto = async (req, res) => {
+  try {
+    const { isEdited, name } = req.body;
+    const photoId = req.params.id; // assuming you're passing the photo ID in the URL
+    const user = await userModel.findById(req.user.id);
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    let photo = await photoModel.findById(photoId);
+    if (!photo) {
+      return res.status(404).json({ error: "Photo not found" });
+    }
+
+    // Check if the user is the owner of the photo
+    if (photo.userId.toString() !== req.user.id) {
+      return res.status(403).json({ error: "Unauthorized" });
+    }
+
+    // Update fields if provided
+    if (name) {
+      photo.name = name;
+    }
+    if (typeof isEdited !== "undefined") {
+      photo.isEdited = isEdited;
+    }
+
+    // Handle new file upload if provided
+    if (req.file) {
+      photo.picture_url = req.file.location;
+    }
+
+    await photo.save();
+
+    return res.status(200).json({ code: 200, message: "Photo updated", photo });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ code: 500, error: "Error While Updating Photo" });
+  }
 };
 
 
-module.exports = { createPhoto, getRecentPhotos, getGalleryPhotos,getAllEditedPhotos,  deletePhoto,updatephoto  };
+
+module.exports = { createPhoto, getRecentPhotos, getGalleryPhotos,getAllEditedPhotos,  deletePhoto,updatephoto,deletebulkimage  };
 

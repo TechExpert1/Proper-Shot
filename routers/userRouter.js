@@ -1,5 +1,5 @@
 const express = require('express')
-const {userLogin, userSignUp, forgotPassword, VerifyOTP, resetPassword  } = require('../controllers/userController');
+const {userLogin, userSignUp, forgotPassword, VerifyOTP, resetPassword ,find } = require('../controllers/userController');
 const authorizationMiddleware = require('../middlewares/myAuth');
 // const authorizationMiddleware = require('../middlewares/myAuth');
 // const subscription = require('../controllers/subscriptionController');
@@ -8,7 +8,7 @@ const userRouter = express.Router()
 //user 
 userRouter.post('/signup', userSignUp)
 userRouter.post('/login', userLogin);
-
+userRouter.get("/singleuser/:id",find)
 
 //password routes
 userRouter.post('/forgot-password', forgotPassword);
