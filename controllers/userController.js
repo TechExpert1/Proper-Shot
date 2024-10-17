@@ -119,11 +119,6 @@ const forgotPassword = async (req, res) => {
       }
         const trimmedEmail = email.trim();
         const lowercaseEmail = trimmedEmail.toLowerCase();
-        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.(com|org|net|edu|gov|mil|int)$/;
-        if (!emailRegex.test(lowercaseEmail)) {
-          return res.status(400).json({ message: "Invalid email format" });
-        }
-        
          const user = await userModel.findOne({
            email: lowercaseEmail
          });

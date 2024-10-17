@@ -96,24 +96,25 @@ const getAllEditedPhotos = async (req, res) => {
     const { page = 1, limit = 10 } = req.query;
     const user = await userModel.findById(req.user.id);
     if (!user) {
-      return res.status(404).json({ error: "User  not found" });
+      return res.status(404).json({ error: "User not found" });
     }
     const options = {
-      sort: { createdAt: 1 },
+      sort: { updatedAt: -1 },
       lean: true,
       offset: (page - 1) * limit,
       limit: limit
     };
     const editedPhotos = await photoModel.paginate({ userId: req.user.id, isEdited: true }, options);
-    if (!editedPhotos.docs) {
+
+    if (!editedPhotos.docs || editedPhotos.docs.length === 0) {
       return res.status(404).json({ message: "Photos not found by this userID" });
     }
     return res.status(200).json({
       message: "All edited photos",
       editedPhotos: editedPhotos.docs,
-      totalPages: editedPhotos.totalPages,
+      totalPages: editedPhotos.pages,
       currentPage: page,
-      totalDocs: editedPhotos.totalDocs
+      totalDocs: editedPhotos.total
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
