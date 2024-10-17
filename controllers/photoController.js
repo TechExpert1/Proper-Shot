@@ -36,8 +36,9 @@ const getGalleryPhotos = async (req, res) => {
     const { page = 1, limit = 10 } = req.query;
     const user = await userModel.findById(req.user.id);
     if (!user) {
-      return res.status(404).json({ error: "User  not found" });
+      return res.status(404).json({ error: "User not found" });
     }
+
     const options = {
       sort: { createdAt: -1 },
       populate: [],
@@ -45,21 +46,31 @@ const getGalleryPhotos = async (req, res) => {
       offset: (page - 1) * limit,
       limit: limit
     };
+
     const galleryPhotos = await photoModel.paginate({ userId: req.user.id }, options);
-    if (!galleryPhotos.docs) {
-      return res.status(404).json({ message: "Photos not found by this userID" });
+
+    if (!galleryPhotos.docs || galleryPhotos.docs.length === 0) {
+      return res.status(200).json({
+        message: "No photos found by this userID",
+        galleryPhotos: [],
+        totalPages: galleryPhotos.totalPages || 0,
+        currentPage: page,
+        totalDocs: galleryPhotos.totalDocs || 0
+      });
     }
+
     return res.status(200).json({
       message: "All photos",
       galleryPhotos: galleryPhotos.docs,
       totalPages: galleryPhotos.totalPages,
       currentPage: page,
-      totalDocs: galleryPhotos.totalDocs 
+      totalDocs: galleryPhotos.totalDocs
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
-}
+};
+
 const getRecentPhotos = async (req, res) => {
   try {
     const { page = 1, limit = 10 } = req.query;
@@ -98,28 +109,42 @@ const getAllEditedPhotos = async (req, res) => {
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
+
     const options = {
       sort: { updatedAt: -1 },
       lean: true,
       offset: (page - 1) * limit,
       limit: limit
     };
-    const editedPhotos = await photoModel.paginate({ userId: req.user.id, isEdited: true }, options);
 
+    const editedPhotos = await photoModel.paginate(
+      { userId: req.user.id, isEdited: true },
+      options
+    );
+
+    // If no edited photos are found, return an empty array with pagination info
     if (!editedPhotos.docs || editedPhotos.docs.length === 0) {
-      return res.status(404).json({ message: "Photos not found by this userID" });
+      return res.status(200).json({
+        message: "No edited photos found by this userID",
+        editedPhotos: [],
+        totalPages: editedPhotos.totalPages || 0,
+        currentPage: page,
+        totalDocs: editedPhotos.totalDocs || 0
+      });
     }
+
     return res.status(200).json({
       message: "All edited photos",
       editedPhotos: editedPhotos.docs,
-      totalPages: editedPhotos.pages,
+      totalPages: editedPhotos.totalPages,
       currentPage: page,
-      totalDocs: editedPhotos.total
+      totalDocs: editedPhotos.totalDocs
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
+
 const deletePhoto = async (req, res) => {
   try {
     const photoId = req.params.id;
