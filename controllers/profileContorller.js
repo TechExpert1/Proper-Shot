@@ -71,8 +71,13 @@ const updateProfile = async (req, res) => {
 
     // Update phone number if provided
     if (req.body.phoneNumber) {
-      if (req.body.phoneNumber.length !== 11 && req.body.phoneNumber.length !== 13) {
-        return res.status(400).json({ message: "Invalid! Phone Number should be 11 or 13 digits" });
+      const phoneNumberExists = await userModel.findOne({ 
+        phoneNumber: req.body.phoneNumber, 
+        _id: { $ne: req.user.id }  // Exclude current user from the check
+      });
+
+      if (phoneNumberExists) {
+        return res.status(400).json({ message: "Phone number already exists" });
       }
       updatedFields.phoneNumber = req.body.phoneNumber;
     }

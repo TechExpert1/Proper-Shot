@@ -196,7 +196,7 @@ const deletebulkimage=async(req,res)=>{
 const updatephoto = async (req, res) => {
   try {
     const { isEdited, name } = req.body;
-    const photoId = req.params.id; // assuming you're passing the photo ID in the URL
+    const photoId = req.params.id; 
     const user = await userModel.findById(req.user.id);
 
     if (!user) {
@@ -207,13 +207,9 @@ const updatephoto = async (req, res) => {
     if (!photo) {
       return res.status(404).json({ error: "Photo not found" });
     }
-
-    // Check if the user is the owner of the photo
     if (photo.userId.toString() !== req.user.id) {
       return res.status(403).json({ error: "Unauthorized" });
     }
-
-    // Update fields if provided
     if (name) {
       photo.name = name;
     }
