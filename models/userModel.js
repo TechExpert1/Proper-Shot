@@ -85,6 +85,10 @@ const userModel = mongoose.Schema({
         allow_redirects: {
             type: String,
         }
+    },
+    deviceToken:{
+        type:String,
+        default:""
     }
 
 }, {timestamps: true});

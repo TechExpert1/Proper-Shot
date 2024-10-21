@@ -196,7 +196,7 @@ const deletebulkimage=async(req,res)=>{
 const updatephoto = async (req, res) => {
   try {
     const { isEdited, name } = req.body;
-    const photoId = req.params.id; 
+    const photoId = req.params.id;
     const user = await userModel.findById(req.user.id);
 
     if (!user) {
@@ -207,12 +207,15 @@ const updatephoto = async (req, res) => {
     if (!photo) {
       return res.status(404).json({ error: "Photo not found" });
     }
+
     if (photo.userId.toString() !== req.user.id) {
       return res.status(403).json({ error: "Unauthorized" });
     }
+
     if (name) {
       photo.name = name;
     }
+
     if (typeof isEdited !== "undefined") {
       photo.isEdited = isEdited;
     }
@@ -224,9 +227,37 @@ const updatephoto = async (req, res) => {
 
     await photo.save();
 
+    // Prepare notification message and title
+    const notificationMessage = "Your photo has been successfully updated.";
+    const notificationTitle = "Photo Updated";
+    const notificationParams = { photoId: photo._id }; // Include photoId in params if needed
+
+    // In-App Notification
+    const newNotification = new Notification({
+      recipient: user._id,  // The user is the recipient
+      heading: notificationTitle,
+      message: notificationMessage,
+      sender: null,  // No specific sender in this case
+      params: notificationParams  // You can add photo details in params if necessary
+    });
+
+    // Save in-app notification to database
+    await newNotification.save();
+
+    // Push Notification
+    if (user.deviceToken) {
+      sendPushNotification(
+        user.deviceToken,
+        notificationTitle,
+        notificationMessage,
+        "PHOTO_UPDATE_NOTIFICATION",
+        notificationParams
+      );
+    }
+
     return res.status(200).json({ code: 200, message: "Photo updated", photo });
   } catch (error) {
-    console.log(error);
+    console.error("Error While Updating Photo:", error);
     res.status(500).json({ code: 500, error: "Error While Updating Photo" });
   }
 };

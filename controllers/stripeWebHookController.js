@@ -2,10 +2,6 @@ const userModel = require('../models/userModel');
 const stripe = require('stripe')('sk_test_51PkRCvRwoQp7EuV9unlcieeGiuIuHLW5pzF35zNzCmO6R6jRFh1KxsdOH5yHeb86Qb99sz677oQyyRkAfvDpBYqn00SMeafDNI');
 const checkoutSession = async (req, res) => {
   const { payment_method, amount, currency, success_url, cancel_url } = req.body;
-  console.log(req.body);
-  
-
-  // Check if the amount is at least $70 (7000 cents)
   amountUSD = 7000/100
   if (amount < amountUSD) {
     return res.status(400).json({ error: 'The amount must be at least $70 to proceed with the subscription.' });
