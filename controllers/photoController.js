@@ -33,43 +33,54 @@ const createPhoto = async (req, res) => {
 //Get All capture and edited photos....
 const getGalleryPhotos = async (req, res) => {
   try {
-    const { page = 1, limit = 10 } = req.query;
+    // Parse page and limit as integers, with defaults
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+
+    // Fetch the user to verify existence
     const user = await userModel.findById(req.user.id);
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
 
+    // Set up pagination options
     const options = {
       sort: { createdAt: -1 },
-      populate: [],
       lean: true,
-      offset: (page - 1) * limit,
-      limit: limit
+      page,
+      limit,
     };
 
-    const galleryPhotos = await photoModel.paginate({ userId: req.user.id }, options);
+    // Fetch paginated gallery photos
+    const galleryPhotos = await photoModel.paginate(
+      { userId: req.user.id, isEditted: false },
+      options
+    );
 
+    // Check if any photos exist for the user
     if (!galleryPhotos.docs || galleryPhotos.docs.length === 0) {
       return res.status(200).json({
         message: "No photos found by this userID",
         galleryPhotos: [],
         totalPages: galleryPhotos.totalPages || 0,
-        currentPage: page,
-        totalDocs: galleryPhotos.totalDocs || 0
+        currentPage: galleryPhotos.page,
+        totalDocs: galleryPhotos.totalDocs || 0,
       });
     }
 
+    // Return the paginated photos
     return res.status(200).json({
       message: "All photos",
       galleryPhotos: galleryPhotos.docs,
       totalPages: galleryPhotos.totalPages,
-      currentPage: page,
-      totalDocs: galleryPhotos.totalDocs
+      currentPage: galleryPhotos.page,
+      totalDocs: galleryPhotos.totalDocs,
     });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    return res.status(500).json({ error: err.message });
   }
 };
+
 
 const getRecentPhotos = async (req, res) => {
   try {
