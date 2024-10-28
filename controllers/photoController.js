@@ -53,7 +53,7 @@ const getGalleryPhotos = async (req, res) => {
 
     // Fetch paginated gallery photos
     const galleryPhotos = await photoModel.paginate(
-      { userId: req.user.id, isEditted: false },
+      { userId: req.user.id, isEdited: false },
       options
     );
 
@@ -96,7 +96,7 @@ const getRecentPhotos = async (req, res) => {
       offset: (page - 1) * limit,
       limit: limit
     };
-    const recentPhotos = await photoModel.paginate({ userId: req.user.id }, options);
+    const recentPhotos = await photoModel.paginate({ userId: req.user.id,isEdited: false }, options);
     if (!recentPhotos.docs) {
       console.log("🚀 ~ getRecentPhotos ~ recentPhotos:", recentPhotos)
       return res.status(404).json({ message: "Recent Photos not found by this userID" });
