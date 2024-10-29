@@ -4,7 +4,8 @@ const dotenv = require("dotenv");
 const path = require("path");
 dotenv.config();
 const userModel = require("../models/userModel");
-
+const Notification=require("../models/Notification")
+const {sendPushNotification}=require("../utils/pushNotification")
 const createPhoto = async (req, res) => {
   try {
     const {isEdited,name} = req.body;
