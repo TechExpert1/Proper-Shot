@@ -7,6 +7,7 @@ const otpGenerate = require('../utils/otpGenerate.js');
 const generateRandomString = require('../utils/generateRandomString');
 const otpResetModel = require('../models/otpResetModel');
 const accountMail = require("../utils/sendEmail");
+const Notification = require('../models/Notification.js');
 
 
 
