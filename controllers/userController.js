@@ -91,38 +91,53 @@ const userSignUp = async (req, res) => {
 
 //Loign the User
 const userLogin = async (req, res) => {
-  const { email, password, deviceToken } = req.body;
   try {
-      if (!email || !password) {
-          return res.status(400).json({ message: "Please enter all required information" });
-      }
+    const user = await userModel.findOne({
+      email: req.body.email.toLowerCase(),
+    });
 
-      const trimmedEmail = email.trim();
-      const lowercaseEmail = trimmedEmail.toLowerCase();
+    if (!user) {
+      return res.status(401).json({ code: 401, error: "User not found" });
+    }
 
-      const existingUser = await userModel.findOne({ email: lowercaseEmail });
-      if (!existingUser) {
-          return res.status(404).json({ message: "User does not exist, please sign up first" });
-      }
+    const comparepass = await bcrypt.compare(req.body.password, user.password);
+    if (!comparepass) {
+      return res.status(401).json({ code: 401, error: "Invalid Password" });
+    }
 
-      const matchPassword = await bcrypt.compare(password, existingUser.password);
-      if (!matchPassword) {
-          return res.status(400).json({ message: "Invalid password" });
-      }
-      if (deviceToken) {
-          existingUser.deviceToken = deviceToken;
-          await existingUser.save();
-      }
+    // Update device token when user logs in
+    user.deviceToken = req.body.deviceToken;
+    await user.save();
 
-      const { password: _, ...userData } = existingUser._doc;
-      const token = await jwt.sign({ email: existingUser.email, id: existingUser._id }, process.env.SecretKey, {
-          expiresIn: "1d",
-      });
+    const { password, ...others } = user._doc;
 
-      return res.status(200).json({ ...userData, token });
-  } catch (error) {
-      console.error("Error in userLogin:", error);
-      return res.status(500).json({ message: "Server error: " + error.message });
+    const accessToken = jwt.sign(
+      {
+        isAdmin: user.isAdmin,
+        _id: user.id,
+      },
+      process.env.SecretKey,
+      { expiresIn: "1d" }
+    );
+
+    if (user.deviceToken) {
+      const title = "Welcome Back!";
+      const message = "You have successfully logged in.";
+      const type = "login";
+      const params = { userId: user._id };
+
+      sendPushNotification(user.deviceToken, title, message, type, params);
+    }
+
+    res.status(200).json({
+      code: 200,
+      message: "User Logged In Successfully",
+      ...others,
+      accessToken,
+    });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ code: 500, error: "Error Occurred" });
   }
 };
 

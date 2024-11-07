@@ -18,8 +18,6 @@ const userModel = mongoose.Schema({
     },
     phoneNumber:{
         type: String,
-        maxlength: 13,
-        minlength: 11
     },
     country:{
         type:'string',
