@@ -25,27 +25,19 @@ const normalizePhoneNumber = (phoneNumber) => {
 const userSignUp = async (req, res) => {
   try {
     const { name, email, phoneNumber, password, confirmPassword, deviceToken } = req.body;
-
-    // Check if all required fields are provided
     if (!name || !email || !phoneNumber || !password) {
       return res.status(400).json({ message: "Please fill in all fields" });
     }
 
     const trimmedEmail = email.trim();
     const lowercaseEmail = trimmedEmail.toLowerCase();
-
-    // Check if the phone number is already in use
     const existingPhoneNumberUser = await userModel.findOne({ phoneNumber });
     if (existingPhoneNumberUser) {
       return res.status(400).json({ message: "This phone number is already in use" });
     }
-
-    // Check if the password length is at least 8 characters
     if (password.length < 8) {
       return res.status(400).json({ message: "Password should be at least 8 characters" });
     }
-
-    // Validate if the password and confirm password match
     if (password !== confirmPassword) {
       return res.status(400).json({ message: "Passwords do not match" });
     }
@@ -56,10 +48,7 @@ const userSignUp = async (req, res) => {
       return res.status(400).json({ message: "Email already in use" });
     }
 
-    // Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Create a new user instance
     const newUser = new userModel({
       name,
       email: lowercaseEmail,
@@ -70,7 +59,7 @@ const userSignUp = async (req, res) => {
     const saveUser = await newUser.save();
     const { password: _, ...userData } = saveUser._doc;
     const token = await jwt.sign({ email: saveUser.email, id: saveUser._id }, process.env.SecretKey, {
-      expiresIn: "1d", // Set token expiration time
+      expiresIn: "1d", 
     });
     if (deviceToken) {
       const message = "Welcome to Proper Shot app! Your 3-day free trial starts now.";
@@ -89,8 +78,6 @@ const userSignUp = async (req, res) => {
       message: notificationMessage,
       params: { trialDays: 3 } 
     });
-
-    // Save the notification in the database
     await newNotification.save();
     return res.status(200).json({ ...userData, token });
   } catch (error) {
@@ -104,32 +91,41 @@ const userSignUp = async (req, res) => {
 
 //Loign the User
 const userLogin = async (req, res) => {
-    const {email} = req.body
-    try {
-        if(!email || !req.body.password) {
-            return res.status(400).json({message: "Please enter all required information"})
-        }
-          const trimmedEmail = email.trim();
-          const lowercaseEmail = trimmedEmail.toLowerCase();
-       
-          
-        existingUser = await userModel.findOne({email: lowercaseEmail})
-        if(!existingUser){
-            return res.status(404).json({message:"User does not exist, please sign up first"})
-        }
-        const matchPassword = await bcrypt.compare(req.body.password, existingUser.password)
-        if(!matchPassword){
-            return res.status(400).json({message: "Invalid password"})
-        }
-        const { password, ...others } = existingUser._doc;
-        const token = await jwt.sign({email:existingUser.email, id:existingUser._id},SecretKey)
-                 
-        return res.status(200).json({...others, token})
-    } catch (error) {
-      console.log("Error : ", error);
-        return res.status(500).json({message: "Server error: " + error.message})
-    }
-}
+  const { email, password, deviceToken } = req.body;
+  try {
+      if (!email || !password) {
+          return res.status(400).json({ message: "Please enter all required information" });
+      }
+
+      const trimmedEmail = email.trim();
+      const lowercaseEmail = trimmedEmail.toLowerCase();
+
+      const existingUser = await userModel.findOne({ email: lowercaseEmail });
+      if (!existingUser) {
+          return res.status(404).json({ message: "User does not exist, please sign up first" });
+      }
+
+      const matchPassword = await bcrypt.compare(password, existingUser.password);
+      if (!matchPassword) {
+          return res.status(400).json({ message: "Invalid password" });
+      }
+      if (deviceToken) {
+          existingUser.deviceToken = deviceToken;
+          await existingUser.save();
+      }
+
+      const { password: _, ...userData } = existingUser._doc;
+      const token = await jwt.sign({ email: existingUser.email, id: existingUser._id }, process.env.SecretKey, {
+          expiresIn: "1d",
+      });
+
+      return res.status(200).json({ ...userData, token });
+  } catch (error) {
+      console.error("Error in userLogin:", error);
+      return res.status(500).json({ message: "Server error: " + error.message });
+  }
+};
+
 // controller for getting single user detail
 const find=async (req,res)=>{
   try {
