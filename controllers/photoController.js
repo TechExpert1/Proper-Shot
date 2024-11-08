@@ -9,7 +9,7 @@ const {sendPushNotification}=require("../utils/pushNotification")
 const createPhoto = async (req, res) => {
   try {
     const {isEdited,name} = req.body;
-    const user = await userModel.findById(req.user.id);
+    const user = await userModel.findById(req.user._id);
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
@@ -39,7 +39,7 @@ const getGalleryPhotos = async (req, res) => {
     const limit = parseInt(req.query.limit) || 10;
 
     // Fetch the user to verify existence
-    const user = await userModel.findById(req.user.id);
+    const user = await userModel.findById(req.user._id);
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
@@ -86,7 +86,7 @@ const getGalleryPhotos = async (req, res) => {
 const getRecentPhotos = async (req, res) => {
   try {
     const { page = 1, limit = 10 } = req.query;
-    const user = await userModel.findById(req.user.id);
+    const user = await userModel.findById(req.user._id);
     console.log("🚀 ~= ~ req.user.id:", req.user.id);
     if (!user) {
       return res.status(404).json({ error: "User  not found" });
@@ -117,7 +117,7 @@ const getRecentPhotos = async (req, res) => {
 const getAllEditedPhotos = async (req, res) => {
   try {
     const { page = 1, limit = 10 } = req.query;
-    const user = await userModel.findById(req.user.id);
+    const user = await userModel.findById(req.user._id);
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
@@ -160,7 +160,7 @@ const getAllEditedPhotos = async (req, res) => {
 const deletePhoto = async (req, res) => {
   try {
     const photoId = req.params.id;
-    const user = await userModel.findById(req.user.id);
+    const user = await userModel.findById(req.user._id);
     if (!user) {
       return res.status(404).json({ message: "User not found by this ID" });
     }
@@ -190,7 +190,7 @@ const deletePhoto = async (req, res) => {
 const deletebulkimage=async(req,res)=>{
   try {
     const photoIds = req.body.photoIds;
-    const user = await userModel.findById(req.user.id);
+    const user = await userModel.findById(req.user._id);
     if (!user) {
       return res.status(404).json({ message: "User not found by this ID" });
     }
@@ -209,7 +209,7 @@ const updatephoto = async (req, res) => {
   try {
     const { isEdited, name } = req.body;
     const photoId = req.params.id;
-    const user = await userModel.findById(req.user.id);
+    const user = await userModel.findById(req.user._id);
 
     if (!user) {
       return res.status(404).json({ error: "User not found" });

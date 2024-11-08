@@ -7,7 +7,7 @@ const authorizationMiddleware = async (req, res, next) => {
     const token = req.headers.authorization.split(' ')[1];
     if (!token) return res.sendStatus(401);
     const decoded = jwt.verify(token, SecretKey);
-    console.log(decoded);
+    // console.log(decoded);
     
     const userId = await User.findById(decoded._id);
     if (!userId) {

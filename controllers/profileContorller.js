@@ -47,7 +47,6 @@ const upload = multer({ storage: storage });
 const updateProfile = async (req, res) => {
   try {
     const user = await userModel.findById(req.user._id);
-console.log(user);
 
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
