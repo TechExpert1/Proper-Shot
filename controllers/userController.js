@@ -105,7 +105,6 @@ const userLogin = async (req, res) => {
       return res.status(401).json({ code: 401, error: "Invalid Password" });
     }
 
-    // Update device token when user logs in
     user.deviceToken = req.body.deviceToken;
     await user.save();
 
