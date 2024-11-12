@@ -60,8 +60,8 @@ const userSignUp = async (req, res) => {
     const { password: _, ...userData } = saveUser._doc;
     const accessToken = jwt.sign(
       {
-        isAdmin: user.isAdmin,
-        _id: user.id,
+        isAdmin: saveUser.isAdmin,
+        _id: saveUser.id,
       },
       process.env.SecretKey,
       { expiresIn: "1d" }
