@@ -58,9 +58,14 @@ const userSignUp = async (req, res) => {
     });
     const saveUser = await newUser.save();
     const { password: _, ...userData } = saveUser._doc;
-    const token = await jwt.sign({ email: saveUser.email, id: saveUser._id }, process.env.SecretKey, {
-      expiresIn: "1d", 
-    });
+    const accessToken = jwt.sign(
+      {
+        isAdmin: user.isAdmin,
+        _id: user.id,
+      },
+      process.env.SecretKey,
+      { expiresIn: "1d" }
+    );
     if (deviceToken) {
       const message = "Welcome to Proper Shot app! Your 3-day free trial starts now.";
       const title = "Welcome to Proper Shot!";
@@ -79,7 +84,7 @@ const userSignUp = async (req, res) => {
       params: { trialDays: 3 } 
     });
     await newNotification.save();
-    return res.status(200).json({ ...userData, token });
+    return res.status(200).json({ ...userData, accessToken });
   } catch (error) {
     console.error("Error in userSignUp:", error);
     return res.status(500).json({ message: "Internal Server Error" });
