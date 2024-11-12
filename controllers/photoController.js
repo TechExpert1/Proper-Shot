@@ -274,7 +274,19 @@ const updatephoto = async (req, res) => {
   }
 };
 
+const photoId=async (req,res)=>{
+  try {
+    const photoId = req.params.id;
+    const photo = await photoModel.findById(photoId);
+    if (!photo) {
+      return res.status(404).json({ message: "Photo not found" });
+    }
+    res.status(200).json(photo);
+  } catch (error) {
+    console.log("Error : ", error);
+    return res.status(500).json({ message: "Server error: " + error.message });
+  }
+}
 
-
-module.exports = { createPhoto, getRecentPhotos, getGalleryPhotos,getAllEditedPhotos,  deletePhoto,updatephoto,deletebulkimage  };
+module.exports = { createPhoto, getRecentPhotos, getGalleryPhotos,getAllEditedPhotos,  deletePhoto,updatephoto,deletebulkimage,photoId  };
 

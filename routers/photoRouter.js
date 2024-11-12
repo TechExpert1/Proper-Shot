@@ -28,7 +28,7 @@ const upload = multer({
   }),
 });
 // const photoController = require('../controllers/photoController');
-const { createPhoto,getGalleryPhotos, getRecentPhotos,  deletePhoto, getAllEditedPhotos, updatephoto,deletebulkimage } = require('../controllers/photoController');
+const { createPhoto,getGalleryPhotos, getRecentPhotos,  deletePhoto, getAllEditedPhotos, updatephoto,deletebulkimage, photoId } = require('../controllers/photoController');
 const authorizationMiddleware = require('../middlewares/myAuth');
 
 //routes
@@ -40,6 +40,7 @@ photoRouter.get('/all-edits',authorizationMiddleware,  getAllEditedPhotos);
 photoRouter.delete('/delete/:id', authorizationMiddleware, deletePhoto)
 photoRouter.put("/update/:id",upload.single('file'),authorizationMiddleware,updatephoto)
 photoRouter.post("/deletebulk",authorizationMiddleware,deletebulkimage)
+photoRouter.get("/signlephot/:id",authorizationMiddleware,photoId)
 
 
 module.exports = photoRouter;
