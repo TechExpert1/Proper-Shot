@@ -87,7 +87,8 @@ const userModel = mongoose.Schema({
     deviceToken:{
         type:String,
         default:""
-    }
+    },
+    account_type: { type: String, default: "" },
 
 }, {timestamps: true});
 

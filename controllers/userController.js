@@ -1,7 +1,9 @@
 const userModel = require('../models/userModel');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
-const {sendPushNotification}=require("../utils/pushNotification")
+const { sendPushNotification } = require("../utils/pushNotification")
+const { OAuth2Client } = require('google-auth-library');
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 const SecretKey = "hellonodejsfamilythisisoursecretkey";
 const otpGenerate = require('../utils/otpGenerate.js');
 const generateRandomString = require('../utils/generateRandomString');
@@ -76,12 +78,12 @@ const userSignUp = async (req, res) => {
     }
     const notificationMessage = "Welcome to Proper Shot app! Your 3-day free trial starts now.";
     const notificationTitle = "Welcome to Proper Shot!";
-    
+
     const newNotification = new Notification({
       recipient: saveUser._id,
       heading: notificationTitle,
       message: notificationMessage,
-      params: { trialDays: 3 } 
+      params: { trialDays: 3 }
     });
     await newNotification.save();
     return res.status(200).json({ ...userData, accessToken });
@@ -146,7 +148,7 @@ const userLogin = async (req, res) => {
 };
 
 // controller for getting single user detail
-const find=async (req,res)=>{
+const find = async (req, res) => {
   try {
     const userId = req.params.id;
     const user = await userModel.findById(userId);
@@ -161,119 +163,161 @@ const find=async (req,res)=>{
 }
 //Forgot Password
 const forgotPassword = async (req, res) => {
-    const { email } = req.body;
-    try {
-      if(!email){
-        return res.status(400).json({message:"Please enter an email"})
-      }
-        const trimmedEmail = email.trim();
-        const lowercaseEmail = trimmedEmail.toLowerCase();
-         const user = await userModel.findOne({
-           email: lowercaseEmail
-         });
-      if (!user) {
-        return res.status(401).json({error: "User does not exist by this email" });
-      }
-      await otpResetModel.deleteMany({ userId: user._id });
-      const otp = otpGenerate();
-      const resetOtp = new otpResetModel({
-        userId: user.id,
-        otp,
-      });
-      await resetOtp.save();
-      await accountMail(user.email, "Reset Password OTP", otp);
-      res.status(200).json({message: "Reset OTP Sent to your given email" });
-    } catch (error) {
-      console.log(error.message);
-      res.status(500).json({
-        code: 500,
-        error: "Error while Requesting Password Reset Request ",
-      });
-        console.log("🚀 ~ res.status ~ error:", error)
+  const { email } = req.body;
+  try {
+    if (!email) {
+      return res.status(400).json({ message: "Please enter an email" })
     }
-  };
+    const trimmedEmail = email.trim();
+    const lowercaseEmail = trimmedEmail.toLowerCase();
+    const user = await userModel.findOne({
+      email: lowercaseEmail
+    });
+    if (!user) {
+      return res.status(401).json({ error: "User does not exist by this email" });
+    }
+    await otpResetModel.deleteMany({ userId: user._id });
+    const otp = otpGenerate();
+    const resetOtp = new otpResetModel({
+      userId: user.id,
+      otp,
+    });
+    await resetOtp.save();
+    await accountMail(user.email, "Reset Password OTP", otp);
+    res.status(200).json({ message: "Reset OTP Sent to your given email" });
+  } catch (error) {
+    console.log(error.message);
+    res.status(500).json({
+      code: 500,
+      error: "Error while Requesting Password Reset Request ",
+    });
+    console.log("🚀 ~ res.status ~ error:", error)
+  }
+};
 
 //Verify OTP
 const VerifyOTP = async (req, res) => {
-    try {
-      const resetOtp = await otpResetModel.findOne({ otp: req.body.otp });
-      if (!resetOtp) {
-        return res.status(404).json({message: "Invalid OTP" });
-      }
-      
-      res.status(200).json({data: resetOtp });
-    } catch (error) {
-      res.status(500).json({error: "Server Error" });
+  try {
+    const resetOtp = await otpResetModel.findOne({ otp: req.body.otp });
+    if (!resetOtp) {
+      return res.status(404).json({ message: "Invalid OTP" });
     }
-  };
+
+    res.status(200).json({ data: resetOtp });
+  } catch (error) {
+    res.status(500).json({ error: "Server Error" });
+  }
+};
 //Reset Password
 const resetPassword = async (req, res) => {
-    const password = req.body.password;
-    const resetOtp = await otpResetModel.findOne({
-      otp: req.body.otp,
-      // userId: req.body.userId,
+  const password = req.body.password;
+  const resetOtp = await otpResetModel.findOne({
+    otp: req.body.otp,
+    // userId: req.body.userId,
+  });
+  if (!resetOtp) {
+    return res.status(401).json({ message: "Invalid OTP" });
+  }
+  // const salt = await bcrypt.genSalt(15);
+  const hashpassword = await bcrypt.hash(password, 10);
+  // console.log("aaaaaaaaaaaaaaaaaaaaaaa");
+  try {
+    await userModel.findByIdAndUpdate(resetOtp.userId, {
+      $set: {
+        password: hashpassword,
+      },
     });
-    if (!resetOtp) {
-      return res.status(401).json({message: "Invalid OTP" });
-    }
-    // const salt = await bcrypt.genSalt(15);
-    const hashpassword = await bcrypt.hash(password, 10);
-    // console.log("aaaaaaaaaaaaaaaaaaaaaaa");
-    try {
-      await userModel.findByIdAndUpdate(resetOtp.userId, {
-        $set: {
-          password: hashpassword,
-        },
-      });
-      await otpResetModel.deleteMany({ userId: resetOtp.userId });
-      return res
-        .status(200)
-        .json({message: "Password Updated successfully" });
-    } catch (error) {
-        console.log(error);
-      res.status(500).json({message: "Error While Reset Password" });
-    }
-
-  };
-//Subscription Module
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
-const subscription = async(req, res)=>{
-    try {
-      const userId = groupid; // or any relevant user identifier
-
-      // Fetch the current user record to get the wallet balance
-      const user = await userModel.findById(userId);
-      let balance = user.walletBalance;
-      
-      const paymentIntent = await stripe.paymentIntents.create({
-        amount: amount * 100,
-        currency: "usd",
-        payment_method: "pm_card_visa",
-        payment_method: paymentMethodId,
-        confirm: true,
-        automatic_payment_methods: {
-          enabled: true,
-          allow_redirects: "never",
-        },
-      });
-      
-      if (paymentIntent && paymentIntent.status === 'succeeded') {
-        // Deduct the amount from wallet balance
-        balance -= amount;
-      
-        // Update wallet balance and group status
-        await userModel.findByIdAndUpdate(userId, {
-          walletBalance: balance,
-          isGroupActive: true
-        });
-      
-        console.log("Payment successful and user model updated.");
-      } else {
-        console.log("Payment failed or not confirmed.");
-      }
-    } catch (error) {
-      
-    }
+    await otpResetModel.deleteMany({ userId: resetOtp.userId });
+    return res
+      .status(200)
+      .json({ message: "Password Updated successfully" });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Error While Reset Password" });
   }
 
-module.exports = {userSignUp, userLogin, forgotPassword, VerifyOTP, resetPassword, subscription,find}
+};
+//Subscription Module
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
+const subscription = async (req, res) => {
+  try {
+    const userId = groupid; // or any relevant user identifier
+
+    // Fetch the current user record to get the wallet balance
+    const user = await userModel.findById(userId);
+    let balance = user.walletBalance;
+
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: amount * 100,
+      currency: "usd",
+      payment_method: "pm_card_visa",
+      payment_method: paymentMethodId,
+      confirm: true,
+      automatic_payment_methods: {
+        enabled: true,
+        allow_redirects: "never",
+      },
+    });
+
+    if (paymentIntent && paymentIntent.status === 'succeeded') {
+      // Deduct the amount from wallet balance
+      balance -= amount;
+
+      // Update wallet balance and group status
+      await userModel.findByIdAndUpdate(userId, {
+        walletBalance: balance,
+        isGroupActive: true
+      });
+
+      console.log("Payment successful and user model updated.");
+    } else {
+      console.log("Payment failed or not confirmed.");
+    }
+  } catch (error) {
+
+  }
+}
+const loginWithGoogle = async (req, res) => {
+  const { idToken,deviceToken } = req.body;
+
+  try {
+    const decodedToken = JSON.parse(Buffer.from(idToken.split(".")[1], "base64").toString());
+    const ticket = await client.verifyIdToken({
+      idToken,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+
+    const payload = ticket.getPayload();
+    const email = payload.email;
+    let user = await userModel.findOne({ email });
+    if (!user) {
+      user = new userModel({
+        name: payload.name,
+        email,
+        password: Math.random().toString(36).slice(-8),
+        profileImage: payload.picture || "",
+        deviceToken,
+        account_type: "google",
+      });
+      await user.save();
+    } else {
+      user.name = payload.name;
+      user.profileImage = payload.picture || user.profileImage;
+      user.deviceToken = deviceToken || user.deviceToken; await user.save();
+    }
+
+    // Generate JWT token
+    const accessToken = jwt.sign(
+      { isAdmin: user.isAdmin || false, _id: user._id },
+      process.env.SecretKey,
+      { expiresIn: "30d" }
+    );
+    const { password, ...others } = user._doc;
+    res.status(200).json({ ...others, accessToken });
+  } catch (error) {
+    console.error(error);
+    res.status(400).json({ error: "Error while logging in with Google: " + error.message });
+  }
+};
+
+module.exports = { userSignUp, userLogin, forgotPassword, VerifyOTP, resetPassword, subscription, find,loginWithGoogle }

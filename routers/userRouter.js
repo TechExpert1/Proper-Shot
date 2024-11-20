@@ -1,5 +1,5 @@
 const express = require('express')
-const {userLogin, userSignUp, forgotPassword, VerifyOTP, resetPassword ,find } = require('../controllers/userController');
+const {userLogin, userSignUp, forgotPassword, VerifyOTP, resetPassword ,find,loginWithGoogle } = require('../controllers/userController');
 const authorizationMiddleware = require('../middlewares/myAuth');
 // const authorizationMiddleware = require('../middlewares/myAuth');
 // const subscription = require('../controllers/subscriptionController');
@@ -14,5 +14,5 @@ userRouter.get("/singleuser/:id",find)
 userRouter.post('/forgot-password', forgotPassword);
 userRouter.post('/verify-otp', VerifyOTP);
 userRouter.post('/reset-password', resetPassword);
-
+userRouter.post("/google-sign",loginWithGoogle)
 module.exports = userRouter
