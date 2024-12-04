@@ -22,6 +22,10 @@ const userModel = mongoose.Schema({
     country:{
         type:'string',
     }, 
+    countrycode:{
+        type:"String",
+        default:"+91",
+    },
     profileImage: {
         type: String,
         default: ""

@@ -26,7 +26,7 @@ const normalizePhoneNumber = (phoneNumber) => {
 //Signup
 const userSignUp = async (req, res) => {
   try {
-    const { name, email, phoneNumber, password, confirmPassword, deviceToken } = req.body;
+    const { name, email, phoneNumber, password, confirmPassword, deviceToken,countrycode } = req.body;
     if (!name || !email || !phoneNumber || !password) {
       return res.status(400).json({ message: "Please fill in all fields" });
     }
@@ -57,6 +57,7 @@ const userSignUp = async (req, res) => {
       phoneNumber,
       password: hashedPassword,
       deviceToken,
+      countrycode
     });
     const saveUser = await newUser.save();
     const { password: _, ...userData } = saveUser._doc;
