@@ -21,6 +21,7 @@ const userModel = mongoose.Schema({
     },
     country:{
         type:'string',
+        default:""
     }, 
     countrycode:{
         type:"String",
