@@ -1,14 +1,12 @@
-const express = require('express')
-const authorizationMiddleware = require('../middlewares/myAuth');
-const { stripeWebhook, stripesubscription, checkoutSession } = require('../controllers/stripeWebHookController');
-const stripeRouter = express.Router()
+const express = require('express');
+const { stripeSubscriptionWebhook, createSubscription } = require('../controllers/stripeWebHookController');
 
+const stripeRouter = express.Router();
 
+// Webhook route (requires raw body middleware for Stripe signature verification)
+stripeRouter.post("/webhook",stripeSubscriptionWebhook)
+ 
+// Create subscription route
+stripeRouter.post('/create-subscription', createSubscription);
 
-
-//subscriptions
-stripeRouter.post('/subscription', authorizationMiddleware, stripesubscription)
-stripeRouter.post('/webhook', authorizationMiddleware, stripeWebhook)
-stripeRouter.post('/create-checkout-session', authorizationMiddleware, checkoutSession)
-
-module.exports = stripeRouter
+module.exports = stripeRouter;
