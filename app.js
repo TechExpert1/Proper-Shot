@@ -8,8 +8,9 @@ require('./config/db.js')
 require('dotenv').config()
 
 //Middlewares
-app.use("/api/createwebhook", express.raw({ type: 'application/json' }), stripewebhook);
+
 app.use(express.json());
+app.use("/api/createwebhook", express.raw({ type: 'application/json' }), stripewebhook);
 app.use(express.urlencoded({extended: false}))
 
 app.use('/auth/user/', userRouter)

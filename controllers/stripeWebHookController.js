@@ -1,68 +1,69 @@
-const stripe = require('stripe')('sk_test_51QZX88Rt6g1B7np604OwJ1bXwRidn7Ji8zASF1Qrpvo6gOXnfakZR34pQL7vL5mlrQjxjFzspLtfD77hQ6LNfpJd00aYEVEj37');
-const userModel = require('../models/userModel');
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
-const stripeSubscriptionWebhook = async (request, response, next) => {
-  const sig = request.headers["stripe-signature"];
-  const webhookSecret = "whsec_DPDiu3fYxDlOMG5u1eiGLQsDoTy74kJI"; 
+const User = require('../models/userModel');
+
+const stripeSubscriptionWebhook = async (req, res, next) => {
+  console.log('in webhook');
+  
+  const sig = req.headers['stripe-signature'];
+
   let event;
 
   try {
-    event = stripe.webhooks.constructEvent(request.body, sig, webhookSecret);
+    event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET);
   } catch (err) {
     console.error(`Webhook Error: ${err.message}`);
-    return response.status(400).send(`Webhook Error: ${err.message}`);
+    return res.status(400).send(`Webhook Error: ${err.message}`);
   }
-
+console.log(event);
   switch (event.type) {
-    case "customer.created":
+    case 'customer.created': {
+      const customer = event.data.object;
       try {
-        const customer = event.data.object;
-        const user = await userModel.findOne({ email: customer.email });
-
-        if (!user) {
-          console.log("No user exists with the provided email");
-          return response.status(404).send("User not found");
+        const user = await User.findOne({ email: customer.email });
+        if (user) {
+          user.stripeAccountId = customer.id;
+          await user.save();
+          console.log(`Stripe customer ID saved for user: ${user.email}`);
+        } else {
+          console.log('No user found for the given email');
         }
-
-        user.stripeAccountId = customer.id;
-        await user.save();
-        console.log(`Stripe customer ID updated for user: ${user.email}`);
-      } catch (err) {
-        console.error(`Error updating stripeAccountId: ${err.message}`);
+      } catch (error) {
+        console.error(`Error handling customer.created: ${error.message}`);
       }
       break;
+    }
 
-    case "customer.subscription.created":
+    case 'customer.subscription.created': {
+      const subscription = event.data.object;
       try {
-        const subscription = event.data.object;
-        const user = await userModel.findOne({ stripeAccountId: subscription.customer });
-
-        if (!user) {
-          console.log("No user found with the given Stripe customer ID");
-          return response.status(404).send("User not found");
+        const user = await User.findOne({ stripeAccountId: subscription.customer });
+        if (user) {
+          user.subscription_id = subscription.id;
+          user.subscription_status = subscription.status;
+          await user.save();
+          console.log(`Subscription created for user: ${user.email}`);
+        } else {
+          console.log('No user found for the given Stripe customer ID');
         }
-
-        user.subscription_id = subscription.id;
-        user.subscription_status = subscription.status;
-        await user.save();
-        console.log(`Subscription created for user: ${user.email}, Status: ${subscription.status}`);
-      } catch (err) {
-        console.error(`Error updating subscription details: ${err.message}`);
+      } catch (error) {
+        console.error(`Error handling customer.subscription.created: ${error.message}`);
       }
       break;
+    }
 
     default:
       console.log(`Unhandled event type: ${event.type}`);
   }
 
-  response.status(200).end();
+  res.status(200).end();
 };
 
-const createSubscription = async (name, email, paymentMethodId, priceAPIId) => {
+const createSubscription = async (name, email, paymentMethodId) => {
   try {
     const customer = await stripe.customers.create({
-      name: name,
-      email: email,
+      name,
+      email,
       payment_method: paymentMethodId,
       invoice_settings: {
         default_payment_method: paymentMethodId,
@@ -71,29 +72,26 @@ const createSubscription = async (name, email, paymentMethodId, priceAPIId) => {
 
     const subscription = await stripe.subscriptions.create({
       customer: customer.id,
-      items: [{ price: priceAPIId }],
+      items: [{ price: process.env.STRIPE_STARTER_API }],
       payment_settings: {
-        payment_method_options: {
-          card: {},
-        },
-        payment_method_types: ["card"],
-        save_default_payment_method: "on_subscription",
+        save_default_payment_method: 'on_subscription',
       },
-      expand: ["latest_invoice.payment_intent"],
+      expand: ['latest_invoice.payment_intent'],
     });
 
     return {
       clientSecret: subscription.latest_invoice.payment_intent.client_secret,
-      customer_id: subscription.customer,
-      subscriptionStatus: subscription.status,
+      customer_id: customer.id,
+      subscription_id: subscription.id,
+      subscription_status: subscription.status,
     };
   } catch (error) {
     console.error(`Error creating subscription: ${error.message}`);
-    return { error: new Error("Failed to create subscription") };
+    throw new Error('Subscription creation failed');
   }
 };
 
 module.exports = {
-  createSubscription,
   stripeSubscriptionWebhook,
+  createSubscription,
 };
