@@ -2,61 +2,74 @@ const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 const User = require('../models/userModel');
 
-const stripeSubscriptionWebhook = async (req, res, next) => {
-  console.log('in webhook');
-  
-  const sig = req.headers['stripe-signature'];
-
-  let event;
-
+const stripeSubscriptionWebhook = async (req, res) => {
   try {
-    event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET);
+    console.log('Headers:', req.headers);
+    
+    const sig = req.headers['stripe-signature'];
+    if (!sig) {
+      console.error('Missing Stripe signature header.');
+      return res.status(400).send('Webhook Error: Missing stripe-signature header.');
+    }
+
+    console.log('Raw Body:', req.body);
+
+    let event;
+    try {
+      event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET);
+      console.log('Stripe Event:', event);
+    } catch (err) {
+      console.error(`Webhook Signature Verification Error: ${err.message}`);
+      return res.status(400).send(`Webhook Error: ${err.message}`);
+    }
+
+    // Handle different event types
+    switch (event.type) {
+      case 'customer.created': {
+        const customer = event.data.object;
+        try {
+          const user = await User.findOne({ email: customer.email });
+          if (user) {
+            user.stripeAccountId = customer.id;
+            await user.save();
+            console.log(`Stripe customer ID saved for user: ${user.email}`);
+          } else {
+            console.log('No user found for the given email.');
+          }
+        } catch (error) {
+          console.error(`Error handling customer.created: ${error.message}`);
+        }
+        break;
+      }
+
+      case 'customer.subscription.created': {
+        const subscription = event.data.object;
+        try {
+          const user = await User.findOne({ stripeAccountId: subscription.customer });
+          if (user) {
+            user.subscription_id = subscription.id;
+            user.subscription_status = subscription.status;
+            await user.save();
+            console.log(`Subscription created for user: ${user.email}`);
+          } else {
+            console.log('No user found for the given Stripe customer ID.');
+          }
+        } catch (error) {
+          console.error(`Error handling customer.subscription.created: ${error.message}`);
+        }
+        break;
+      }
+
+      default:
+        console.log(`Unhandled event type: ${event.type}`);
+    }
+
+    // Respond with a 200 to acknowledge receipt of the event
+    res.status(200).end();
   } catch (err) {
-    console.error(`Webhook Error: ${err.message}`);
-    return res.status(400).send(`Webhook Error: ${err.message}`);
+    console.error('Unexpected Error:', err.message);
+    res.status(500).send('Internal Server Error');
   }
-console.log(event);
-  switch (event.type) {
-    case 'customer.created': {
-      const customer = event.data.object;
-      try {
-        const user = await User.findOne({ email: customer.email });
-        if (user) {
-          user.stripeAccountId = customer.id;
-          await user.save();
-          console.log(`Stripe customer ID saved for user: ${user.email}`);
-        } else {
-          console.log('No user found for the given email');
-        }
-      } catch (error) {
-        console.error(`Error handling customer.created: ${error.message}`);
-      }
-      break;
-    }
-
-    case 'customer.subscription.created': {
-      const subscription = event.data.object;
-      try {
-        const user = await User.findOne({ stripeAccountId: subscription.customer });
-        if (user) {
-          user.subscription_id = subscription.id;
-          user.subscription_status = subscription.status;
-          await user.save();
-          console.log(`Subscription created for user: ${user.email}`);
-        } else {
-          console.log('No user found for the given Stripe customer ID');
-        }
-      } catch (error) {
-        console.error(`Error handling customer.subscription.created: ${error.message}`);
-      }
-      break;
-    }
-
-    default:
-      console.log(`Unhandled event type: ${event.type}`);
-  }
-
-  res.status(200).end();
 };
 
 const createSubscription = async (name, email, paymentMethodId) => {

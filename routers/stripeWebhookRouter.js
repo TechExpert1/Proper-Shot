@@ -3,11 +3,9 @@ const { stripeSubscriptionWebhook, createSubscription } = require('../controller
 
 const stripeRouter = express.Router();
 stripeRouter.post(
-    "/webhook",
-    express.raw({ type: "application/json" }), 
-    stripeSubscriptionWebhook
-  );
- 
+  "/webhook", 
+  stripeSubscriptionWebhook
+);
 // Create subscription route
 stripeRouter.post('/create-subscription', createSubscription);
 
