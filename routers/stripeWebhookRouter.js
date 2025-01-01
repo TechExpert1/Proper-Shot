@@ -1,5 +1,5 @@
 const express = require('express');
-const { stripeSubscriptionWebhook, createSubscription } = require('../controllers/stripeWebHookController');
+const { stripeSubscriptionWebhook, createSubscription,cancelSubscription } = require('../controllers/stripeWebHookController');
 
 const stripeRouter = express.Router();
 stripeRouter.post(
@@ -8,5 +8,5 @@ stripeRouter.post(
 );
 // Create subscription route
 stripeRouter.post('/create-subscription', createSubscription);
-
+stripeRouter.post('/cancel',cancelSubscription)
 module.exports = stripeRouter;

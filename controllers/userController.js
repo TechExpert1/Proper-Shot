@@ -26,7 +26,8 @@ const normalizePhoneNumber = (phoneNumber) => {
 //Signup
 const userSignUp = async (req, res) => {
   try {
-    const { name, email, phoneNumber, password, confirmPassword, deviceToken,countrycode,country } = req.body;
+    const { name, email, phoneNumber, password, confirmPassword, deviceToken, countrycode, country } = req.body;
+
     if (!name || !email || !phoneNumber || !password) {
       return res.status(400).json({ message: "Please fill in all fields" });
     }
@@ -44,13 +45,18 @@ const userSignUp = async (req, res) => {
       return res.status(400).json({ message: "Passwords do not match" });
     }
 
-    // Check if the email is already in use
     const existingUser = await userModel.findOne({ email: lowercaseEmail });
     if (existingUser) {
       return res.status(400).json({ message: "Email already in use" });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
+    
+    // Calculate trial dates
+    const trialStartDate = new Date();
+    const trialEndDate = new Date();
+    trialEndDate.setDate(trialStartDate.getDate() + 3); 
+
     const newUser = new userModel({
       name,
       email: lowercaseEmail,
@@ -58,10 +64,14 @@ const userSignUp = async (req, res) => {
       password: hashedPassword,
       deviceToken,
       countrycode,
-      country
+      country,
+      trialstartin: trialStartDate,
+      trialendin: trialEndDate,
     });
+
     const saveUser = await newUser.save();
     const { password: _, ...userData } = saveUser._doc;
+
     const accessToken = jwt.sign(
       {
         isAdmin: saveUser.isAdmin,
@@ -70,6 +80,8 @@ const userSignUp = async (req, res) => {
       process.env.SecretKey,
       { expiresIn: "1d" }
     );
+
+    // Send a welcome notification
     if (deviceToken) {
       const message = "Welcome to Proper Shot app! Your 3-day free trial starts now.";
       const title = "Welcome to Proper Shot!";
@@ -78,6 +90,7 @@ const userSignUp = async (req, res) => {
 
       sendPushNotification(deviceToken, title, message, type, params);
     }
+
     const notificationMessage = "Welcome to Proper Shot app! Your 3-day free trial starts now.";
     const notificationTitle = "Welcome to Proper Shot!";
 
@@ -85,15 +98,34 @@ const userSignUp = async (req, res) => {
       recipient: saveUser._id,
       heading: notificationTitle,
       message: notificationMessage,
-      params: { trialDays: 3 }
+      params: { trialDays: 3 },
     });
     await newNotification.save();
+
+    // Schedule a notification for the trial end date
+    setTimeout(async () => {
+      const trialEndMessage = "Your 3-day free trial has ended. Subscribe now to continue enjoying Proper Shot.";
+      const trialEndTitle = "Trial Ended";
+
+      sendPushNotification(deviceToken, trialEndTitle, trialEndMessage, "TRIAL_END_NOTIFICATION", {});
+
+      const trialEndNotification = new Notification({
+        recipient: saveUser._id,
+        heading: trialEndTitle,
+        message: trialEndMessage,
+        params: {},
+      });
+      await trialEndNotification.save();
+    }, 3 * 24 * 60 * 60 * 1000); // 3 days in milliseconds
+
     return res.status(200).json({ ...userData, accessToken });
   } catch (error) {
     console.error("Error in userSignUp:", error);
     return res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
+
 
 
 
@@ -196,7 +228,6 @@ const forgotPassword = async (req, res) => {
     console.log("🚀 ~ res.status ~ error:", error)
   }
 };
-
 //Verify OTP
 const VerifyOTP = async (req, res) => {
   try {

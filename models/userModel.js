@@ -16,6 +16,14 @@ const userModel = mongoose.Schema({
         required: 'true',
         minlength:8
     },
+    trialstartin:{
+        type: Date,
+        default: Date.now(),
+    },
+    trialendin:{
+        type: Date,
+        default: null,
+    },
     phoneNumber:{
         type: String,
     },
@@ -34,25 +42,33 @@ const userModel = mongoose.Schema({
 
     // Subscription
     stripeAccountId: {
-        type: String
+        type: String,
+        default:"",
     },
     payoutsEnabled: {
-        type: Boolean
+        type: Boolean,
+        default: false
     },
     externalAccountId: {
-        type: String
+        type: String,
+        default:"",
     },
+        
     account_plan: {
         type: String,
+        default:""
     },
     plan_id: {
-        type: String
+        type: String,
+        default:""
     },
     subscription_id: {
-        type: String
+        type: String,
+        default:""
     },
     subscription_status: {
-        type: String
+        type: String,
+        default:"trial"
     },
 
     // Payment Details
@@ -69,11 +85,18 @@ const userModel = mongoose.Schema({
         type: String,
         default: 'one-time',
     },
+    expiresIn:{
+        type:Date,
+        default: null,
+
+    },
     success_url: {
         type: String,
+        default:null,
     },
     cancel_url: {
         type: String,
+        default:null,
     },
     stripeSessionId: {
         type: String,
