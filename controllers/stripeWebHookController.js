@@ -11,9 +11,7 @@ const stripeSubscriptionWebhook = async (req, res) => {
       console.error('Missing Stripe signature header.');
       return res.status(400).send('Webhook Error: Missing stripe-signature header.');
     }
-
     console.log('Raw Body:', req.body);
-
     let event;
     try {
       event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET);
@@ -72,7 +70,13 @@ const stripeSubscriptionWebhook = async (req, res) => {
   }
 };
 
-const createSubscription = async (name, email, paymentMethodId) => {
+const createSubscription = async (req, res) => {
+  const { name, email, paymentMethodId } = req.body;
+
+  if (!name || !email || !paymentMethodId) {
+    return res.status(400).json({ message: 'Name, email, and payment method ID are required.' });
+  }
+
   try {
     const customer = await stripe.customers.create({
       name,
@@ -92,17 +96,22 @@ const createSubscription = async (name, email, paymentMethodId) => {
       expand: ['latest_invoice.payment_intent'],
     });
 
-    return {
+    res.status(200).json({
       clientSecret: subscription.latest_invoice.payment_intent.client_secret,
       customer_id: customer.id,
       subscription_id: subscription.id,
       subscription_status: subscription.status,
-    };
+    });
   } catch (error) {
     console.error(`Error creating subscription: ${error.message}`);
-    throw new Error('Subscription creation failed');
+    res.status(500).json({
+      message: 'Subscription creation failed',
+      error: error.message,
+      stack: error.stack,
+    });
   }
 };
+
 
 module.exports = {
   stripeSubscriptionWebhook,

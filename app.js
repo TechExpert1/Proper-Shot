@@ -18,7 +18,7 @@ app.use('/auth/user/', profileRouter)
 
 app.use('/api/photos', photoRouter);
 
-// app.use('/api/stripe',stripewebhook)
+app.use('/api/stripe',stripewebhook)
 const port = process.env.PORT || 8888
 app.listen(port, ()=>{
     console.log(`Server is listening on port:  ${port}`)
