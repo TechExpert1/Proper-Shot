@@ -78,10 +78,10 @@ const createSubscription = async (req, res) => {
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
-    if (user.subscId && user.stripeCusId) {
+    if (user.subscId && user.stripeAccountId) {
       return res.status(403).json({ error: "You already have an active subscription." });
     }
-    let customerId = user.stripeCusId;
+    let customerId = user.stripeAccountId;
     if (!customerId) {
       const customer = await stripe.customers.create({
         name: user.username,
@@ -89,7 +89,7 @@ const createSubscription = async (req, res) => {
         metadata: { userId },
       });
       customerId = customer.id;
-      user.stripeCusId = customerId;
+      user.stripeAccountId = customerId;
       await user.save();
     }
     const priceDetails = await stripe.prices.retrieve(priceId);
