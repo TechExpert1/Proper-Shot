@@ -71,63 +71,47 @@ const stripeSubscriptionWebhook = async (req, res) => {
 };
 
 const createSubscription = async (req, res) => {
-  const { name, email, paymentMethodId } = req.body;
-
-  if (!name || !email || !paymentMethodId) {
-    return res.status(400).json({ message: 'Name, email, and payment method ID are required.' });
-  }
-
   try {
-    // Create Stripe customer
-    const customer = await stripe.customers.create({
-      name,
-      email,
-      payment_method: paymentMethodId,
-      invoice_settings: {
-        default_payment_method: paymentMethodId,
-      },
-    });
-
-    // Create subscription
-    const subscription = await stripe.subscriptions.create({
-      customer: customer.id,
-      items: [{ price: process.env.STRIPE_STARTER_API }],
-      payment_settings: {
-        save_default_payment_method: 'on_subscription',
-      },
-      expand: ['latest_invoice.payment_intent'],
-    });
-    const currentDate = new Date();
-    const expirationDate = new Date(currentDate.setDate(currentDate.getDate() + 30));
-    const user = await User.findOneAndUpdate(
-      { email }, 
-      {
-        stripeAccountId: customer.id,
-        subscription_id: subscription.id,
-        subscription_status: subscription.status,
-        expiresIn: expirationDate, // Set the expiration date
-      },
-      { new: true } // Return the updated document
-    );
-
+    const { userId } = req.body;
+    const priceId="price_1QZnoHRt6g1B7np6a7n7aAGA";
+    const user = await User.findById(userId);
     if (!user) {
-      return res.status(404).json({ message: 'User not found. Subscription created without linking to a user.' });
+      return res.status(404).json({ error: "User not found" });
     }
-
+    if (user.subscId && user.stripeCusId) {
+      return res.status(403).json({ error: "You already have an active subscription." });
+    }
+    let customerId = user.stripeCusId;
+    if (!customerId) {
+      const customer = await stripe.customers.create({
+        name: user.username,
+        email: user.email,
+        metadata: { userId },
+      });
+      customerId = customer.id;
+      user.stripeCusId = customerId;
+      await user.save();
+    }
+    const priceDetails = await stripe.prices.retrieve(priceId);
+    if (!priceDetails) {
+      return res.status(400).json({ error: "Invalid price ID." });
+    }
+    const amount = priceDetails.unit_amount;
+    const currency = priceDetails.currency;
+    const paymentIntent = await stripe.paymentIntents.create({
+      customer: customerId,
+      amount,
+      currency,
+      metadata: { userId, priceId },
+      setup_future_usage: "off_session",
+    });
     res.status(200).json({
-      clientSecret: subscription.latest_invoice.payment_intent.client_secret,
-      customer_id: customer.id,
-      subscription_id: subscription.id,
-      subscription_status: subscription.status,
-      expiresIn: user.expiresIn,
+      clientSecret: paymentIntent.client_secret,
+      customerId,
     });
   } catch (error) {
-    console.error(`Error creating subscription: ${error.message}`);
-    res.status(500).json({
-      message: 'Subscription creation failed',
-      error: error.message,
-      stack: error.stack,
-    });
+    console.error("Error creating PaymentIntent:", error.message);
+    res.status(500).json({ error: "Failed to create PaymentIntent" });
   }
 };
 // get payment intent
