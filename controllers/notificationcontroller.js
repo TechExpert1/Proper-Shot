@@ -1,13 +1,19 @@
-const Notification= require ("../Model/Notification")
+const Notification= require ("../models/Notification")
 const  mongoose=require ('mongoose');
 
 const notifications = async (req, res) => {
   try {
     const { userId } = req.params;
-    const notifications = await Notification.find({ recipient: userId })
-      .sort({ createdAt: -1 })
-      .populate('sender', 'username image');
-    const responseData = notifications.map(notification => ({
+    const { page = 1, limit = 10 } = req.query;
+
+    const options = {
+      page: parseInt(page, 10),
+      limit: parseInt(limit, 10),
+      sort: { createdAt: -1 },
+      populate: { path: 'sender', select: 'name image' },
+    };
+    const result = await Notification.paginate({ recipient: userId }, options);
+    const responseData = result.docs.map(notification => ({
       _id: notification._id,
       recipient: notification.recipient,
       heading: notification.heading,
@@ -16,16 +22,26 @@ const notifications = async (req, res) => {
       updatedAt: notification.updatedAt,
       requestId: notification.requestId,
       params: notification.params,
-      sender: notification.sender ? {
-        _id: notification.sender._id,
-        username: notification.sender.username,
-        image: notification.sender.image
-      } : null
+      sender: notification.sender
+        ? {
+            _id: notification.sender._id,
+            name: notification.sender.name,
+            image: notification.sender.image,
+          }
+        : null,
     }));
 
     res.status(200).json({
       status: 'success',
-      data: responseData
+      totalDocs: result.totalDocs,
+      totalPages: result.totalPages,
+      currentPage: result.page,
+      limit: result.limit,
+      hasPrevPage: result.hasPrevPage,
+      hasNextPage: result.hasNextPage,
+      prevPage: result.prevPage,
+      nextPage: result.nextPage,
+      data: responseData,
     });
   } catch (error) {
     console.error(error);

@@ -1,7 +1,7 @@
 const {
     notifications,
     deletenotifications
-}=require("../controller/notificationcontroller")
+}=require("../controllers/notificationcontroller")
 
 const router=require("express").Router()
 router.get("/getnotification/:userId",notifications)

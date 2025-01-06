@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const mongoosePaginate = require('mongoose-paginate-v2');
 const NotificationSchema = new mongoose.Schema({
     requestId: {
         type: mongoose.Schema.Types.ObjectId,
@@ -22,11 +23,12 @@ const NotificationSchema = new mongoose.Schema({
 
     },
     params: {
-        type: Object,  // Use Object to store key-value pairs like bookId and rentRequestId
+        type: Object,
         default: {},
     }
 
 }, {
     timestamps: true
 });
+NotificationSchema.plugin(mongoosePaginate);
 module.exports = mongoose.model("Notification", NotificationSchema)
