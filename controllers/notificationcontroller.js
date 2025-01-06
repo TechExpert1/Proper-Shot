@@ -1,4 +1,4 @@
-const Notification= require ("../models/Notification")
+  const Notification= require ("../models/Notification")
 const  mongoose=require ('mongoose');
 
 const notifications = async (req, res) => {
@@ -72,8 +72,23 @@ const deletenotifications = async (req, res) => {
       res.status(500).json({ message: 'Failed to delete notification' });
     }
   };
+// controller for delete all the notification on the base of usrId
+const deletenotificationsbyuser = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const deletedNotifications = await Notification.deleteMany({ recipient: userId });
+    res.status(200).json({
+      status:'success',
+      message: `${deletedNotifications.deletedCount} notifications deleted successfully`
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Failed to delete notifications' });
+  }
+}
 
 module.exports = {
     notifications,
-    deletenotifications
+    deletenotifications,
+    deletenotificationsbyuser
   }
