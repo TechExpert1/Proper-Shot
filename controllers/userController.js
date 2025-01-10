@@ -352,5 +352,182 @@ const loginWithGoogle = async (req, res) => {
     res.status(400).json({ error: "Error while logging in with Google: " + error.message });
   }
 };
+// -----------------------admin login------------------------
+const dashboard = async (req, res) => {
+  try {
+    const admins = await userModel.countDocuments({ isAdmin: true });
+    const users = await userModel.countDocuments();
+    // const books=await Book.countDocuments();
+    const usersData = await userModel.find({ isAdmin: false }).select("name email image createdAt");
+    res.status(200).json({ admins, users, usersData });
+  } catch (error) {
+    console.log(error);
+    res
+      .status(500)
+      .json({ code: 500, message: "Error Getting Dashboard Data" });
+  }
+};
+const registerAdmin = async (req, res) => {
+  try {
+    const checke = await userModel.findOne({ email: req.body.email.toLowerCase() });
+    if (checke)
+      return res.status(409).json({
+        code: 409,
+        message: "Admin with this Email Already Exists",
+      });
+   
+    if (req.body.password !== req.body.confirmpassword)
+      return res
+        .status(400)
+        .json({ code: 400, message: "Passsword Not Matched" });
 
-module.exports = { userSignUp, userLogin, forgotPassword, VerifyOTP, resetPassword, subscription, find,loginWithGoogle }
+
+    const salt = await bcrypt.genSalt(12);
+    const hashpassword = await bcrypt.hash(req.body.password, salt);
+    const newAdmin = new userModel({
+      name: req.body.name,
+      email: req.body.email.toLowerCase(),
+      password: hashpassword,
+      isAdmin: true,
+    });
+    const savedAdmin = await newAdmin.save();
+    res.status(200).json({ code: 200, message: "Admin Registered", savedAdmin });
+  } catch (error) {
+    res.status(500).json({ code: 500, message: error.message });
+  }
+};
+const Loginadmin = async (req, res) => {
+  try {
+    const user = await userModel.findOne({
+      email: req.body.email.toLowerCase(),
+    });
+    if (!user) {
+      return res.status(401).json({ code: 401, error: "User not found" });
+    }
+    const comparepass = await bcrypt.compare(req.body.password, user.password);
+    if (!comparepass) {
+      return res.status(401).json({ code: 401, error: "Invalid Password" });
+    }
+    
+    const { password, ...others } = user._doc;
+    const accessToken = jwt.sign(
+      {
+        isAdmin: user.isAdmin,
+        _id: user.id,
+      },
+      process.env.SecretKey,
+      { expiresIn: "30d" }
+    );
+    user.deviceToken = req.body.deviceToken
+    res.status(200).json({
+      code: 200,
+      message: "User Loged In Successfully",
+      ...others,
+      accessToken,
+    });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ code: 500, error: "Error Occured" });
+  }
+};
+const allusers = async (req, res) => {
+  try {
+    const usersData = await userModel.find({ isAdmin: false })
+      .select("name email image phoneNumber countrycode createdAt")
+      .sort({ createdAt: -1 });
+      console.log(usersData);
+    res.status(200).json({ usersData });
+  } catch (error) {
+    res.status(500).json({ code: 500, message: "Error Getting Users Data" });
+  }
+};
+// get single user detail
+const GetUserDetails = async (req, res) => {
+  try {
+    const user = await userModel.findById(req.params.userId)
+    if (!user) {
+      return res.status(404).json({
+        code: 404,
+        error: "User Not Found",
+      });
+    }
+
+    res.status(200).json({ code: 200, message: "User Details", user });
+  } catch (error) {
+    console.error('Error Getting User Details:', error);
+    res.status(500).json({
+      code: 500,
+      error: "Error Getting User Details: " + error.message,
+    });
+  }
+};
+
+
+
+// get all admin
+const GetAllAdmins = async (req, res) => {
+  try {
+    const allAdmins = await userModel.find({
+      isAdmin: true,
+    }).sort({
+      createdAt: -1,
+    });
+    res.status(200).json({ code: 200, admins: allAdmins });
+  } catch (error) {
+    res.status(500).json({ code: 500, message: "Error While Getting Admins" });
+  }
+};
+// editt admin
+const edittprofile = async (req, res) => {
+  try {
+    const userId = req.params.userId;
+    const user = await userModel.findById(userId);
+    if (!user) {
+      return res.status(404).json({ code: 404, error: "User not found" });
+    }
+
+    let updatedFields = req.body;
+  
+
+    const updateUser = await userModel.findByIdAndUpdate(
+      userId,
+      { $set: updatedFields },
+      { new: true }
+    );
+
+    if (!updateUser) {
+      return res.status(404).json({ code: 404, error: "User not found" });
+    }
+
+    res.status(200).json({ code: 200, message: "User updated successfully", user: updateUser });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ code: 500, error: "Error While Updating Data" });
+  }
+};
+// search by name
+const searchUsersByName = async (req, res) => {
+  const { name } = req.query;
+  try {
+    const users = await User.find({ fullname: { $regex: new RegExp(name, 'i') } });
+    res.json(users);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+const deleteadminuser = async (req, res) => {
+
+  try {
+    const userId = req.params.userId;
+    const user = await userModel.findById(userId);
+    if (!user) {
+      return res.status(404).json({ code: 404, message: 'User not found' });
+    }
+    await userModel.findByIdAndDelete(userId);
+    res.status(200).json({ code: 200, message: 'User deleted successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ code: 500, message: 'Error while processing request' });
+  }
+};
+module.exports = { userSignUp, userLogin, forgotPassword, VerifyOTP, resetPassword, subscription, find,loginWithGoogle,registerAdmin,dashboard,Loginadmin,allusers,GetUserDetails,GetAllAdmins,edittprofile,searchUsersByName,deleteadminuser }

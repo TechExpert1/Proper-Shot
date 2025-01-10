@@ -66,6 +66,10 @@ const userModel = mongoose.Schema({
         type: String,
         default:""
     },
+    isAdmin:{
+        type: Boolean,
+        default: false,
+    },
     subscription_status: {
         type: String,
         default:"trial"
