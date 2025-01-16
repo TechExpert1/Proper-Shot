@@ -78,7 +78,7 @@ const userSignUp = async (req, res) => {
         _id: saveUser.id,
       },
       process.env.SecretKey,
-      { expiresIn: "1d" }
+      { expiresIn: "365d" }
     );
 
     // Send a welcome notification
@@ -157,7 +157,7 @@ const userLogin = async (req, res) => {
         _id: user.id,
       },
       process.env.SecretKey,
-      { expiresIn: "1d" }
+      { expiresIn: "365d" }
     );
 
     if (user.deviceToken) {
@@ -343,7 +343,7 @@ const loginWithGoogle = async (req, res) => {
     const accessToken = jwt.sign(
       { isAdmin: user.isAdmin || false, _id: user._id },
       process.env.SecretKey,
-      { expiresIn: "30d" }
+      { expiresIn: "365d" }
     );
     const { password, ...others } = user._doc;
     res.status(200).json({ ...others, accessToken });
@@ -416,7 +416,7 @@ const Loginadmin = async (req, res) => {
         _id: user.id,
       },
       process.env.SecretKey,
-      { expiresIn: "30d" }
+      { expiresIn: "365d" }
     );
     user.deviceToken = req.body.deviceToken
     res.status(200).json({
