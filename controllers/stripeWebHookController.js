@@ -105,7 +105,7 @@ const createSubscription = async (req, res) => {
       metadata: { userId, priceId },
       setup_future_usage: "off_session",
     });
-    user.subscription_status = 'active';
+    // user.subscription_status = 'active';
     await user.save();
     res.status(200).json({
       clientSecret: paymentIntent.client_secret,
