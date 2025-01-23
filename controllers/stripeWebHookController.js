@@ -105,7 +105,7 @@ const createSubscription = async (req, res) => {
       metadata: { userId, priceId },
       setup_future_usage: "off_session",
     });
-    // user.subscription_status = 'active';
+    user.subscription_status = 'pending';
     await user.save();
     res.status(200).json({
       clientSecret: paymentIntent.client_secret,
@@ -116,6 +116,38 @@ const createSubscription = async (req, res) => {
     res.status(500).json({ error: "Failed to create PaymentIntent" });
   }
 };
+// cnfrm payment 
+const confirmPayment = async (req, res) => {
+  try {
+    const { paymentIntentId, userId } = req.body;
+
+    // Retrieve the PaymentIntent from Stripe
+    const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+    
+    if (!paymentIntent) {
+      return res.status(404).json({ error: "PaymentIntent not found." });
+    }
+
+    // Check the payment status
+    if (paymentIntent.status !== "succeeded") {
+      return res.status(400).json({ error: "Payment not successful." });
+    }
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ error: "User not found." });
+    }
+
+    user.subscription_status = "active";
+    user.subscId = paymentIntent.id; 
+    await user.save();
+
+    res.status(200).json({ message: "Payment confirmed, subscription activated." });
+  } catch (error) {
+    console.error("Error confirming payment:", error.message);
+    res.status(500).json({ error: "Failed to confirm payment." });
+  }
+};
+
 // get payment intent
 // export const getPaymentIntent = async (req, res) => {
 //   try {
@@ -184,5 +216,6 @@ const cancelSubscription = async (req, res) => {
 module.exports = {
   stripeSubscriptionWebhook,
   createSubscription,
-  cancelSubscription
+  cancelSubscription,
+  confirmPayment
 };
