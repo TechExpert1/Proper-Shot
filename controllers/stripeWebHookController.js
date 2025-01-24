@@ -69,7 +69,6 @@ const stripeSubscriptionWebhook = async (req, res) => {
     res.status(500).send('Internal Server Error');
   }
 };
-
 const createSubscription = async (req, res) => {
   try {
     const { userId } = req.body;
@@ -83,9 +82,7 @@ const createSubscription = async (req, res) => {
     if (user.subscId && user.stripeAccountId) {
       return res.status(403).json({ error: "You already have an active subscription." });
     }
-
     let customerId = user.stripeAccountId;
-    
     if (!customerId) {
       const customer = await stripe.customers.create({
         name: user.username,
@@ -133,7 +130,6 @@ const createSubscription = async (req, res) => {
     res.status(500).json({ error: "Failed to create PaymentIntent" });
   }
 };
-
 // cnfrm payment 
 const confirmPayment = async (req, res) => {
   try {
@@ -165,7 +161,6 @@ const confirmPayment = async (req, res) => {
     res.status(500).json({ error: "Failed to confirm payment." });
   }
 };
-
 // get payment intent
 // export const getPaymentIntent = async (req, res) => {
 //   try {
