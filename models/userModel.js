@@ -120,6 +120,14 @@ const userModel = mongoose.Schema({
         type:String,
         default:""
     },
+    subscriptionstartin:{
+        type: Date,
+        default: Date.now(),
+    },
+    subscriptionendin:{
+        type: Date,
+        default: null,
+    },
     account_type: { type: String, default: "" },
 
 }, {timestamps: true});

@@ -73,15 +73,19 @@ const stripeSubscriptionWebhook = async (req, res) => {
 const createSubscription = async (req, res) => {
   try {
     const { userId } = req.body;
-    const priceId="price_1QZnoHRt6g1B7np6a7n7aAGA";
+    const priceId = "price_1QZnoHRt6g1B7np6a7n7aAGA";
+    
     const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
+
     if (user.subscId && user.stripeAccountId) {
       return res.status(403).json({ error: "You already have an active subscription." });
     }
+
     let customerId = user.stripeAccountId;
+    
     if (!customerId) {
       const customer = await stripe.customers.create({
         name: user.username,
@@ -92,12 +96,15 @@ const createSubscription = async (req, res) => {
       user.stripeAccountId = customerId;
       await user.save();
     }
+
     const priceDetails = await stripe.prices.retrieve(priceId);
     if (!priceDetails) {
       return res.status(400).json({ error: "Invalid price ID." });
     }
+
     const amount = priceDetails.unit_amount;
     const currency = priceDetails.currency;
+
     const paymentIntent = await stripe.paymentIntents.create({
       customer: customerId,
       amount,
@@ -105,17 +112,28 @@ const createSubscription = async (req, res) => {
       metadata: { userId, priceId },
       setup_future_usage: "off_session",
     });
-    user.subscription_status = 'pending';
+    const startDate = new Date();
+    const endDate = new Date();
+    endDate.setDate(startDate.getDate() + 30); 
+
+    user.subscription_status = "pending";
+    user.subscriptionstartin = startDate;
+    user.subscriptionendin = endDate;
+
     await user.save();
+
     res.status(200).json({
       clientSecret: paymentIntent.client_secret,
       customerId,
+      subscriptionStart: startDate,
+      subscriptionEnd: endDate,
     });
   } catch (error) {
     console.error("Error creating PaymentIntent:", error.message);
     res.status(500).json({ error: "Failed to create PaymentIntent" });
   }
 };
+
 // cnfrm payment 
 const confirmPayment = async (req, res) => {
   try {
