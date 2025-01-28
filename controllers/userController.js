@@ -51,11 +51,11 @@ const userSignUp = async (req, res) => {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    
+
     // Calculate trial dates
     const trialStartDate = new Date();
     const trialEndDate = new Date();
-    trialEndDate.setDate(trialStartDate.getDate() + 3); 
+    trialEndDate.setDate(trialStartDate.getDate() + 3);
 
     const newUser = new userModel({
       name,
@@ -311,7 +311,7 @@ const subscription = async (req, res) => {
   }
 }
 const loginWithGoogle = async (req, res) => {
-  const { idToken,deviceToken } = req.body;
+  const { idToken, deviceToken } = req.body;
 
   try {
     const decodedToken = JSON.parse(Buffer.from(idToken.split(".")[1], "base64").toString());
@@ -375,7 +375,6 @@ const registerAdmin = async (req, res) => {
         code: 409,
         message: "Admin with this Email Already Exists",
       });
-   
     if (req.body.password !== req.body.confirmpassword)
       return res
         .status(400)
@@ -408,7 +407,7 @@ const Loginadmin = async (req, res) => {
     if (!comparepass) {
       return res.status(401).json({ code: 401, error: "Invalid Password" });
     }
-    
+
     const { password, ...others } = user._doc;
     const accessToken = jwt.sign(
       {
@@ -435,7 +434,7 @@ const allusers = async (req, res) => {
     const usersData = await userModel.find({ isAdmin: false })
       .select("name email image phoneNumber countrycode createdAt")
       .sort({ createdAt: -1 });
-      console.log(usersData);
+    console.log(usersData);
     res.status(200).json({ usersData });
   } catch (error) {
     res.status(500).json({ code: 500, message: "Error Getting Users Data" });
@@ -487,7 +486,7 @@ const edittprofile = async (req, res) => {
     }
 
     let updatedFields = req.body;
-  
+
 
     const updateUser = await userModel.findByIdAndUpdate(
       userId,
@@ -530,4 +529,4 @@ const deleteadminuser = async (req, res) => {
     res.status(500).json({ code: 500, message: 'Error while processing request' });
   }
 };
-module.exports = { userSignUp, userLogin, forgotPassword, VerifyOTP, resetPassword, subscription, find,loginWithGoogle,registerAdmin,dashboard,Loginadmin,allusers,GetUserDetails,GetAllAdmins,edittprofile,searchUsersByName,deleteadminuser }
+module.exports = { userSignUp, userLogin, forgotPassword, VerifyOTP, resetPassword, subscription, find, loginWithGoogle, registerAdmin, dashboard, Loginadmin, allusers, GetUserDetails, GetAllAdmins, edittprofile, searchUsersByName, deleteadminuser }

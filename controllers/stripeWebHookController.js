@@ -113,7 +113,7 @@ const createSubscription = async (req, res) => {
     const endDate = new Date();
     endDate.setDate(startDate.getDate() + 30); 
 
-    user.subscription_status = "pending";
+    // user.subscription_status = "pending";
     user.subscriptionstartin = startDate;
     user.subscriptionendin = endDate;
 
