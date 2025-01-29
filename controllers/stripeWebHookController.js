@@ -154,16 +154,10 @@ const confirmPayment = async (req, res) => {
         intent: null
       });
     }
-    // if (paymentIntent.status !== "succeeded") {
-    //   return res.status(400).json({
-    //     code: "failed",
-    //     message: "Payment not successful.",
-    //     intent: paymentIntent
-    //   });
-    // }
-
+    
     user.subscription_status = "active";
-    user.subscId = paymentIntent.id; 
+    user.subscId = paymentIntent.id;
+    user.lastIntent = paymentIntent;
     await user.save();
 
     res.status(200).json({

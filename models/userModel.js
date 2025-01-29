@@ -124,6 +124,10 @@ const userModel = mongoose.Schema({
         type: String,
         default: "en",
     },
+    lastIntent:{
+        type: String,
+        default: "",
+    },
     subscriptionstartin:{
         type: Date,
         default: Date.now(),
