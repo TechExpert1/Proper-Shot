@@ -1,5 +1,6 @@
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
+const userModel = require('../models/userModel');
 const User = require('../models/userModel');
 
 const stripeSubscriptionWebhook = async (req, res) => {
@@ -133,7 +134,12 @@ const createSubscription = async (req, res) => {
 // cnfrm payment 
 const confirmPayment = async (req, res) => {
   try {
-    const { paymentIntentId, userId } = req.body;
+    const userId = await userModel.findById(req.user._id);
+    
+        if (!userId) {
+          return res.status(404).json({ error: 'User not found' });
+        }
+    const { paymentIntentId } = req.body;
 
     // Retrieve the PaymentIntent from Stripe
     const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
@@ -143,9 +149,9 @@ const confirmPayment = async (req, res) => {
     }
 
     // Check the payment status
-    if (paymentIntent.status !== "succeeded") {
-      return res.status(400).json({ error: "Payment not successful." });
-    }
+    // if (paymentIntent.status !== "succeeded") {
+    //   return res.status(400).json({ error: "Payment not successful." });
+    // }
     const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({ error: "User not found." });
@@ -183,7 +189,12 @@ const confirmPayment = async (req, res) => {
 // cancel subscription
 const cancelSubscription = async (req, res) => {
   try {
-    const { paymentIntentId, userId } = req.body;
+    const userId = await userModel.findById(req.user._id);
+
+    if (!userId) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    const { paymentIntentId } = req.body;
     const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
     if (!paymentIntent) {
       return res.status(404).json({ error: "PaymentIntent not found." });
