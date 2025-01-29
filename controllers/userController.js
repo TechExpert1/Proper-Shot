@@ -124,12 +124,6 @@ const userSignUp = async (req, res) => {
     return res.status(500).json({ message: "Internal Server Error" });
   }
 };
-
-
-
-
-
-
 //Loign the User
 const userLogin = async (req, res) => {
   try {
@@ -180,7 +174,6 @@ const userLogin = async (req, res) => {
     res.status(500).json({ code: 500, error: "Error Occurred" });
   }
 };
-
 // controller for getting single user detail
 const find = async (req, res) => {
   try {
@@ -460,9 +453,6 @@ const GetUserDetails = async (req, res) => {
     });
   }
 };
-
-
-
 // get all admin
 const GetAllAdmins = async (req, res) => {
   try {

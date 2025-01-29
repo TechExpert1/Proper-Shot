@@ -1,0 +1,192 @@
+{
+    "signup": {
+        "fillAllFields": "Veuillez remplir tous les champs",
+        "phoneNumberInUse": "Ce numéro de téléphone est déjà utilisé",
+        "passwordLength": "Le mot de passe doit contenir au moins 8 caractères",
+        "passwordsNotMatch": "Les mots de passe ne correspondent pas",
+        "emailInUse": "L'email est déjà utilisé",
+        "welcomeMessage": "Bienvenue sur l'application Proper Shot ! Votre essai gratuit de 3 jours commence maintenant.",
+        "welcomeTitle": "Bienvenue sur Proper Shot !",
+        "trialEndedMessage": "Votre essai gratuit de 3 jours est terminé. Abonnez-vous maintenant pour continuer à profiter de Proper Shot.",
+        "trialEndedTitle": "Essai terminé"
+    },
+    "login": {
+        "userNotFound": "Utilisateur non trouvé",
+        "invalidPassword": "Mot de passe invalide",
+        "loginSuccess": "Utilisateur connecté avec succès",
+        "welcomeBack": "Bon retour !",
+        "loginMessage": "Vous vous êtes connecté avec succès."
+    },
+    "forgotPassword": {
+        "enterEmail": "Veuillez entrer un email",
+        "userNotExist": "Aucun utilisateur n'existe avec cet email",
+        "resetOTPSent": "Le code de réinitialisation a été envoyé à votre email",
+        "errorRequestingReset": "Erreur lors de la demande de réinitialisation du mot de passe"
+    },
+    "verifyOTP": {
+        "invalidOTP": "Code OTP invalide",
+        "serverError": "Erreur serveur"
+    },
+    "resetPassword": {
+        "invalidOTP": "Code OTP invalide",
+        "passwordUpdated": "Mot de passe mis à jour avec succès",
+        "errorResettingPassword": "Erreur lors de la réinitialisation du mot de passe"
+    },
+    "subscription": {
+        "paymentSuccess": "Paiement réussi et modèle utilisateur mis à jour.",
+        "paymentFailed": "Échec du paiement ou non confirmé."
+    },
+    "googleLogin": {
+        "errorLoggingIn": "Erreur lors de la connexion avec Google : "
+    },
+    "adminDashboard": {
+        "errorGettingData": "Erreur lors de la récupération des données du tableau de bord"
+    },
+    "adminRegistration": {
+        "adminExists": "Un administrateur avec cet email existe déjà",
+        "passwordNotMatched": "Le mot de passe ne correspond pas",
+        "adminRegistered": "Administrateur enregistré"
+    },
+    "adminLogin": {
+        "loginSuccess": "Utilisateur connecté avec succès",
+        "errorOccurred": "Une erreur est survenue"
+    },
+    "allUsers": {
+        "errorGettingUsers": "Erreur lors de la récupération des données des utilisateurs"
+    },
+    "getUserDetails": {
+        "userNotFound": "Utilisateur non trouvé",
+        "userDetails": "Détails de l'utilisateur",
+        "errorGettingDetails": "Erreur lors de la récupération des détails de l'utilisateur : "
+    },
+    "getAllAdmins": {
+        "errorGettingAdmins": "Erreur lors de la récupération des administrateurs"
+    },
+    "editProfile": {
+        "userNotFound": "Utilisateur non trouvé",
+        "userUpdated": "Utilisateur mis à jour avec succès",
+        "errorUpdating": "Erreur lors de la mise à jour des données"
+    },
+    "deleteAdminUser": {
+        "userNotFound": "Utilisateur non trouvé",
+        "userDeleted": "Utilisateur supprimé avec succès",
+        "errorProcessing": "Erreur lors du traitement de la demande"
+    },
+    "photo": {
+        "create": {
+            "userNotFound": "Utilisateur non trouvé",
+            "pictureUploaded": "Photo téléchargée",
+            "uploadError": "Erreur lors du téléchargement de la photo"
+        },
+        "gallery": {
+            "userNotFound": "Utilisateur non trouvé",
+            "noPhotosFound": "Aucune photo trouvée pour cet utilisateur",
+            "allPhotos": "Toutes les photos"
+        },
+        "recent": {
+            "userNotFound": "Utilisateur non trouvé",
+            "noRecentPhotos": "Aucune photo récente trouvée pour cet utilisateur",
+            "recentPhotos": "Photos récentes"
+        },
+        "edited": {
+            "userNotFound": "Utilisateur non trouvé",
+            "noEditedPhotos": "Aucune photo éditée trouvée pour cet utilisateur",
+            "allEditedPhotos": "Toutes les photos éditées"
+        },
+        "delete": {
+            "userNotFound": "Utilisateur non trouvé",
+            "photoNotFound": "Photo non trouvée",
+            "photoDeleted": "Photo supprimée avec succès",
+            "serverError": "Erreur interne du serveur"
+        },
+        "deleteBulk": {
+            "userNotFound": "Utilisateur non trouvé",
+            "noPhotosFound": "Aucune photo trouvée",
+            "photosDeleted": "Photos supprimées avec succès"
+        },
+        "update": {
+            "userNotFound": "Utilisateur non trouvé",
+            "photoNotFound": "Photo non trouvée",
+            "unauthorized": "Non autorisé",
+            "photoUpdatedMessage": "Votre photo a été mise à jour avec succès.",
+            "photoUpdatedTitle": "Photo mise à jour",
+            "photoUpdated": "Photo mise à jour",
+            "updateError": "Erreur lors de la mise à jour de la photo"
+        },
+        "getById": {
+            "photoNotFound": "Photo non trouvée",
+            "serverError": "Erreur serveur : "
+        }
+    },
+    "updateProfile": {
+        "userNotFound": "Utilisateur non trouvé",
+        "phoneNumberExists": "Le numéro de téléphone existe déjà",
+        "passwordNotMatched": "Le mot de passe ne correspond pas",
+        "userUpdated": "Utilisateur mis à jour avec succès",
+        "noFieldsProvided": "Aucun champ fourni pour la mise à jour",
+        "errorUpdating": "Erreur lors de la mise à jour des données"
+    },
+    "stripeSubscriptionWebhook": {
+        "missingStripeSignature": "Erreur Webhook : En-tête stripe-signature manquant.",
+        "webhookSignatureError": "Erreur Webhook : {error}",
+        "customerCreated": "ID client Stripe enregistré pour l'utilisateur : {email}",
+        "noUserFoundForEmail": "Aucun utilisateur trouvé pour l'email donné.",
+        "customerSubscriptionCreated": "Abonnement créé pour l'utilisateur : {email}",
+        "noUserFoundForStripeId": "Aucun utilisateur trouvé pour l'ID client Stripe donné.",
+        "unhandledEvent": "Type d'événement non géré : {eventType}"
+    },
+    "createSubscription": {
+        "userNotFound": "Utilisateur non trouvé",
+        "alreadyHasSubscription": "Vous avez déjà un abonnement actif.",
+        "invalidPriceId": "ID de prix invalide.",
+        "paymentIntentError": "Échec de la création de PaymentIntent",
+        "subscriptionStart": "L'abonnement a commencé le {startDate}",
+        "subscriptionEnd": "L'abonnement se terminera le {endDate}"
+    },
+    "confirmPayment": {
+        "paymentIntentNotFound": "PaymentIntent non trouvé.",
+        "paymentNotSuccessful": "Paiement non réussi.",
+        "userNotFound": "Utilisateur non trouvé.",
+        "paymentConfirmed": "Paiement confirmé, abonnement activé.",
+        "paymentConfirmationError": "Échec de la confirmation du paiement."
+    },
+    "cancelSubscription": {
+        "emailRequired": "L'email est requis.",
+        "userNotFound": "Utilisateur ou abonnement non trouvé.",
+        "subscriptionCanceled": "Abonnement annulé avec succès.",
+        "cancelSubscriptionError": "Échec de l'annulation de l'abonnement.",
+        "cancelSubscriptionStripeError": "Échec de l'annulation de l'abonnement. Stripe n'a pas renvoyé de réponse valide."
+    },
+    "notifications": {
+        "failedToFetch": "Échec de la récupération des notifications",
+        "success": "Notifications récupérées avec succès",
+        "pagination": {
+            "totalDocs": "{totalDocs}",
+            "totalPages": "{totalPages}",
+            "currentPage": "{currentPage}",
+            "limit": "{limit}",
+            "hasPrevPage": "{hasPrevPage}",
+            "hasNextPage": "{hasNextPage}",
+            "prevPage": "{prevPage}",
+            "nextPage": "{nextPage}"
+        },
+        "notificationDetails": {
+            "_id": "{_id}",
+            "recipient": "{recipient}",
+            "heading": "{heading}",
+            "message": "{message}",
+            "createdAt": "{createdAt}",
+            "updatedAt": "{updatedAt}",
+            "requestId": "{requestId}",
+            "params": "{params}",
+            "sender": {
+                "_id": "{sender._id}",
+                "name": "{sender.name}",
+                "image": "{sender.image}"
+            }
+        }
+    },
+    "welcome": {
+        "title": "Bienvenue sur Proper Shot !"
+    }
+}

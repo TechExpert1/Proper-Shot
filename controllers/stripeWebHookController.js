@@ -182,43 +182,30 @@ const confirmPayment = async (req, res) => {
 // }
 // cancel subscription
 const cancelSubscription = async (req, res) => {
-  const { email } = req.body;
-
-  if (!email) {
-    return res.status(400).json({ message: 'Email is required.' });
-  }
-
   try {
-    // Find user by email
-    const user = await User.findOne({ email });
-
-    if (!user || !user.subscription_id) {
-      return res.status(404).json({ message: 'User or subscription not found.' });
+    const { paymentIntentId, userId } = req.body;
+    const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+    if (!paymentIntent) {
+      return res.status(404).json({ error: "PaymentIntent not found." });
     }
-
-    // Cancel the subscription
-    // const canceledSubscription = await stripe.subscriptions.del(user.subscription_id);
-
-    // if (!canceledSubscription) {
-    //   throw new Error('Failed to cancel subscription. Stripe did not return a valid response.');
-    // }
-
-    // Update user subscription status
-    user.subscription_status = 'canceled';
-    user.subscription_id = ''; 
+    if (paymentIntent.status === "canceled") {
+      return res.status(400).json({ error: "Payment is already canceled." });
+    }
+    if (paymentIntent.status === "succeeded") {
+      return res.status(400).json({ error: "Payment already succeeded and cannot be canceled." });
+    }
+    const canceledPayment = await stripe.paymentIntents.cancel(paymentIntentId);
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ error: "User not found." });
+    }
+    user.subscription_status = "canceled";
+    user.subscId = null; 
     await user.save();
-
-    res.status(200).json({
-      message: 'Subscription canceled successfully.',
-      // subscription: canceledSubscription,
-    });
+    res.status(200).json({ message: "Payment canceled successfully." });
   } catch (error) {
-    console.error(`Error canceling subscription: ${error.message}`);
-    res.status(500).json({
-      message: 'Subscription cancellation failed.',
-      error: error.message,
-      stack: error.stack,
-    });
+    console.error("Error canceling payment:", error.message);
+    res.status(500).json({ error: "Failed to cancel payment." });
   }
 };
 

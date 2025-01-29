@@ -1,0 +1,202 @@
+{
+    "signup": {
+        "fillAllFields": "Please fill in all fields",
+        "phoneNumberInUse": "This phone number is already in use",
+        "passwordLength": "Password should be at least 8 characters",
+        "passwordsNotMatch": "Passwords do not match",
+        "emailInUse": "Email already in use",
+        "welcomeMessage": "Welcome to Proper Shot app! Your 3-day free trial starts now.",
+        "welcomeTitle": "Welcome to Proper Shot!",
+        "trialEndedMessage": "Your 3-day free trial has ended. Subscribe now to continue enjoying Proper Shot.",
+        "trialEndedTitle": "Trial Ended"
+    },
+    "login": {
+        "userNotFound": "User not found",
+        "invalidPassword": "Invalid Password",
+        "loginSuccess": "User Logged In Successfully",
+        "welcomeBack": "Welcome Back!",
+        "loginMessage": "You have successfully logged in."
+    },
+    "forgotPassword": {
+        "enterEmail": "Please enter an email",
+        "userNotExist": "User does not exist by this email",
+        "resetOTPSent": "Reset OTP Sent to your given email",
+        "errorRequestingReset": "Error while requesting password reset"
+    },
+    "verifyOTP": {
+        "invalidOTP": "Invalid OTP",
+        "serverError": "Server Error"
+    },
+    "resetPassword": {
+        "invalidOTP": "Invalid OTP",
+        "passwordUpdated": "Password updated successfully",
+        "errorResettingPassword": "Error while resetting password"
+    },
+    "subscription": {
+        "paymentSuccess": "Payment successful and user model updated.",
+        "paymentFailed": "Payment failed or not confirmed."
+    },
+    "googleLogin": {
+        "errorLoggingIn": "Error while logging in with Google: "
+    },
+    "adminDashboard": {
+        "errorGettingData": "Error getting dashboard data"
+    },
+    "adminRegistration": {
+        "adminExists": "Admin with this email already exists",
+        "passwordNotMatched": "Password does not match",
+        "adminRegistered": "Admin registered"
+    },
+    "adminLogin": {
+        "loginSuccess": "User logged in successfully",
+        "errorOccurred": "Error occurred"
+    },
+    "allUsers": {
+        "errorGettingUsers": "Error getting users data"
+    },
+    "getUserDetails": {
+        "userNotFound": "User not found",
+        "userDetails": "User details",
+        "errorGettingDetails": "Error getting user details: "
+    },
+    "getAllAdmins": {
+        "errorGettingAdmins": "Error while getting admins"
+    },
+    "editProfile": {
+        "userNotFound": "User not found",
+        "userUpdated": "User updated successfully",
+        "errorUpdating": "Error while updating data"
+    },
+    "deleteAdminUser": {
+        "userNotFound": "User not found",
+        "userDeleted": "User deleted successfully",
+        "errorProcessing": "Error while processing request"
+    },
+    "photo": {
+        "create": {
+            "userNotFound": "User not found",
+            "pictureUploaded": "Picture uploaded",
+            "uploadError": "Error while uploading picture"
+        },
+        "gallery": {
+            "userNotFound": "User not found",
+            "noPhotosFound": "No photos found by this userID",
+            "allPhotos": "All photos"
+        },
+        "recent": {
+            "userNotFound": "User not found",
+            "noRecentPhotos": "Recent photos not found by this userID",
+            "recentPhotos": "Recent photos"
+        },
+        "edited": {
+            "userNotFound": "User not found",
+            "noEditedPhotos": "No edited photos found by this userID",
+            "allEditedPhotos": "All edited photos"
+        },
+        "delete": {
+            "userNotFound": "User not found by this ID",
+            "photoNotFound": "Photo not found by this ID",
+            "photoDeleted": "Photo deleted successfully",
+            "serverError": "Internal server error"
+        },
+        "deleteBulk": {
+            "userNotFound": "User not found by this ID",
+            "noPhotosFound": "No photos found by this ID",
+            "photosDeleted": "Photos deleted successfully"
+        },
+        "update": {
+            "userNotFound": "User not found",
+            "photoNotFound": "Photo not found",
+            "unauthorized": "Unauthorized",
+            "photoUpdatedMessage": "Your photo has been successfully updated.",
+            "photoUpdatedTitle": "Photo updated",
+            "photoUpdated": "Photo updated",
+            "updateError": "Error while updating photo"
+        },
+        "getById": {
+            "photoNotFound": "Photo not found",
+            "serverError": "Server error: "
+        }
+    },
+    "updateProfile": {
+        "userNotFound": "User not found",
+        "phoneNumberExists": "Phone number already exists",
+        "passwordNotMatched": "Password does not match",
+        "userUpdated": "User updated successfully",
+        "noFieldsProvided": "No fields provided for update",
+        "errorUpdating": "Error while updating data"
+    },
+    "stripeSubscriptionWebhook": {
+        "missingStripeSignature": "Webhook error: Missing stripe-signature header.",
+        "webhookSignatureError": "Webhook error: {error}",
+        "customerCreated": "Stripe customer ID saved for user: {email}",
+        "noUserFoundForEmail": "No user found for the given email.",
+        "customerSubscriptionCreated": "Subscription created for user: {email}",
+        "noUserFoundForStripeId": "No user found for the given Stripe customer ID.",
+        "unhandledEvent": "Unhandled event type: {eventType}"
+    },
+    "createSubscription": {
+        "userNotFound": "User not found",
+        "alreadyHasSubscription": "You already have an active subscription.",
+        "invalidPriceId": "Invalid price ID.",
+        "paymentIntentError": "Failed to create PaymentIntent",
+        "subscriptionStart": "Subscription started on {startDate}",
+        "subscriptionEnd": "Subscription will end on {endDate}"
+    },
+    "confirmPayment": {
+        "paymentIntentNotFound": "PaymentIntent not found.",
+        "paymentNotSuccessful": "Payment not successful.",
+        "userNotFound": "User not found.",
+        "paymentConfirmed": "Payment confirmed, subscription activated.",
+        "paymentConfirmationError": "Failed to confirm payment."
+    },
+    "cancelSubscription": {
+        "emailRequired": "Email is required.",
+        "userNotFound": "User or subscription not found.",
+        "subscriptionCanceled": "Subscription canceled successfully.",
+        "cancelSubscriptionError": "Subscription cancellation failed.",
+        "cancelSubscriptionStripeError": "Failed to cancel subscription. Stripe did not return a valid response."
+    },
+    "notifications": {
+        "failedToFetch": "Failed to fetch notifications",
+        "success": "Notifications fetched successfully",
+        "pagination": {
+            "totalDocs": "{totalDocs}",
+            "totalPages": "{totalPages}",
+            "currentPage": "{currentPage}",
+            "limit": "{limit}",
+            "hasPrevPage": "{hasPrevPage}",
+            "hasNextPage": "{hasNextPage}",
+            "prevPage": "{prevPage}",
+            "nextPage": "{nextPage}"
+        },
+        "notificationDetails": {
+            "_id": "{_id}",
+            "recipient": "{recipient}",
+            "heading": "{heading}",
+            "message": "{message}",
+            "createdAt": "{createdAt}",
+            "updatedAt": "{updatedAt}",
+            "requestId": "{requestId}",
+            "params": "{params}",
+            "sender": {
+                "_id": "{sender._id}",
+                "name": "{sender.name}",
+                "image": "{sender.image}"
+            }
+        }
+    },
+    "deletenotifications": {
+        "invalidNotificationId": "Invalid notification ID",
+        "notificationNotFound": "Notification not found",
+        "notificationDeleted": "Notification deleted successfully",
+        "deleteNotificationError": "Failed to delete notification"
+    },
+    "deletenotificationsbyuser": {
+        "notificationsDeleted": "{deletedCount} notifications deleted successfully",
+        "deleteNotificationsError": "Failed to delete notifications"
+    },
+    "welcome":{
+        "title":"Welcome to Proper Shot!"
+    }
+}

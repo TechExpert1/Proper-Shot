@@ -120,6 +120,10 @@ const userModel = mongoose.Schema({
         type:String,
         default:""
     },
+    language: {
+        type: String,
+        default: "en",
+    },
     subscriptionstartin:{
         type: Date,
         default: Date.now(),
