@@ -134,37 +134,50 @@ const createSubscription = async (req, res) => {
 // cnfrm payment 
 const confirmPayment = async (req, res) => {
   try {
-    const userId = await userModel.findById(req.user._id);
+    const user = await User.findById(req.user._id);
     
-        if (!userId) {
-          return res.status(404).json({ error: 'User not found' });
-        }
-    const { paymentIntentId } = req.body;
+    if (!user) {
+      return res.status(404).json({
+        code: "failed",
+        message: "User not found.",
+        intent: null
+      });
+    }
 
-    // Retrieve the PaymentIntent from Stripe
+    const { paymentIntentId } = req.body;
     const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
     
     if (!paymentIntent) {
-      return res.status(404).json({ error: "PaymentIntent not found." });
+      return res.status(404).json({
+        code: "failed",
+        message: "PaymentIntent not found.",
+        intent: null
+      });
     }
-
-    // Check the payment status
     // if (paymentIntent.status !== "succeeded") {
-    //   return res.status(400).json({ error: "Payment not successful." });
+    //   return res.status(400).json({
+    //     code: "failed",
+    //     message: "Payment not successful.",
+    //     intent: paymentIntent
+    //   });
     // }
-    const user = await User.findById(userId);
-    if (!user) {
-      return res.status(404).json({ error: "User not found." });
-    }
 
     user.subscription_status = "active";
     user.subscId = paymentIntent.id; 
     await user.save();
 
-    res.status(200).json({ message: "Payment confirmed, subscription activated." });
+    res.status(200).json({
+      code: "success",
+      message: "Payment confirmed, subscription activated.",
+      intent: paymentIntent
+    });
   } catch (error) {
     console.error("Error confirming payment:", error.message);
-    res.status(500).json({ error: "Failed to confirm payment." });
+    res.status(500).json({
+      code: "failed",
+      message: "Failed to confirm payment.",
+      intent: null
+    });
   }
 };
 // get payment intent
@@ -189,40 +202,66 @@ const confirmPayment = async (req, res) => {
 // cancel subscription
 const cancelSubscription = async (req, res) => {
   try {
-    const userId = await userModel.findById(req.user._id);
+    const { paymentIntentId, userId } = req.body;
 
-    if (!userId) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-    const { paymentIntentId } = req.body;
+    // Retrieve the PaymentIntent from Stripe
     const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+    
     if (!paymentIntent) {
-      return res.status(404).json({ error: "PaymentIntent not found." });
+      return res.status(404).json({
+        code: "failed",
+        message: "PaymentIntent not found.",
+        intent: null
+      });
     }
+
+    // Check if payment is already canceled or succeeded
     if (paymentIntent.status === "canceled") {
-      return res.status(400).json({ error: "Payment is already canceled." });
+      return res.status(400).json({
+        code: "failed",
+        message: "Payment is already canceled.",
+        intent: paymentIntent
+      });
     }
     if (paymentIntent.status === "succeeded") {
-      return res.status(400).json({ error: "Payment already succeeded and cannot be canceled." });
+      return res.status(400).json({
+        code: "failed",
+        message: "Payment already succeeded and cannot be canceled.",
+        intent: paymentIntent
+      });
     }
+
+    // Cancel the PaymentIntent
     const canceledPayment = await stripe.paymentIntents.cancel(paymentIntentId);
+    
+    // Update user subscription status if applicable
     const user = await User.findById(userId);
     if (!user) {
-      return res.status(404).json({ error: "User not found." });
+      return res.status(404).json({
+        code: "failed",
+        message: "User not found.",
+        intent: canceledPayment
+      });
     }
+
     user.subscription_status = "canceled";
     user.subscId = null; 
     await user.save();
-    res.status(200).json({ message: "Payment canceled successfully." });
+
+    res.status(200).json({
+      code: "success",
+      message: "Payment canceled successfully.",
+      intent: canceledPayment
+    });
   } catch (error) {
     console.error("Error canceling payment:", error.message);
-    res.status(500).json({ error: "Failed to cancel payment." });
+    res.status(500).json({
+      code: "failed",
+      message: "Failed to cancel payment.",
+      intent: null
+    });
   }
 };
-
-
-
-
 
 module.exports = {
   stripeSubscriptionWebhook,
