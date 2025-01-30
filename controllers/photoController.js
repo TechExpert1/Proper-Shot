@@ -5,29 +5,38 @@ const path = require("path");
 dotenv.config();
 const userModel = require("../models/userModel");
 const Notification=require("../models/Notification")
-const {sendPushNotification}=require("../utils/pushNotification")
+const {sendPushNotification}=require("../utils/pushNotification");
+const i18next =require("../config/i18n.js")
 const createPhoto = async (req, res) => {
   try {
-    const {isEdited,name} = req.body;
+    const { isEdited, name } = req.body;
     const user = await userModel.findById(req.user._id);
+
     if (!user) {
-      return res.status(404).json({ error: "User not found" });
+      return res.status(404).json({ error: i18next.t("create.userNotFound") });
     }
-    let uploadPicture = req.file;
-    if (req.file) {
-      uploadPicture.pictures = req.file?.location;
+
+    if (!req.file || !req.file.location) {
+      return res.status(400).json({ error: i18next.t("create.uploadError") });
     }
+
     const UserPictures = new photoModel({
       name,
       userId: req.user.id,
       isEdited,
-      picture_url: uploadPicture.location,
+      picture_url: req.file.location,
     });
-    await UserPictures.save()
-    return res.status(200).json({ code: 200, message: "Picture uploaded" , UserPictures});
+
+    await UserPictures.save();
+
+    return res.status(200).json({
+      code: 200,
+      message: i18next.t("create.pictureUploaded"),
+      UserPictures,
+    });
   } catch (error) {
-    console.log(error);
-    res.status(500).json({ code: 500, error: "Error While Uploading Picture" });
+    console.error("Upload Error:", error);
+    res.status(500).json({ code: 500, error: i18next.t("create.uploadError") });
   }
 };
 
@@ -41,7 +50,7 @@ const getGalleryPhotos = async (req, res) => {
     // Fetch the user to verify existence
     const user = await userModel.findById(req.user._id);
     if (!user) {
-      return res.status(404).json({ error: "User not found" });
+      return res.status(404).json({ error:i18next.t ("User not found") });
     }
 
     // Set up pagination options
@@ -61,7 +70,7 @@ const getGalleryPhotos = async (req, res) => {
     // Check if any photos exist for the user
     if (!galleryPhotos.docs || galleryPhotos.docs.length === 0) {
       return res.status(200).json({
-        message: "No photos found by this userID",
+        message: i18next.t("gallery.noPhotosFound"),
         galleryPhotos: [],
         totalPages: galleryPhotos.totalPages || 0,
         currentPage: galleryPhotos.page,
@@ -71,7 +80,7 @@ const getGalleryPhotos = async (req, res) => {
 
     // Return the paginated photos
     return res.status(200).json({
-      message: "All photos",
+      message: i18next.t("gallery.allPhotos"),
       galleryPhotos: galleryPhotos.docs,
       totalPages: galleryPhotos.totalPages,
       currentPage: galleryPhotos.page,
@@ -85,105 +94,133 @@ const getGalleryPhotos = async (req, res) => {
 
 const getRecentPhotos = async (req, res) => {
   try {
-    const { page = 1, limit = 10 } = req.query;
+    // Parse and ensure valid pagination values
+    const page = Math.max(parseInt(req.query.page) || 1, 1);
+    const limit = Math.max(parseInt(req.query.limit) || 10, 1);
+    
+    // Check if user exists
     const user = await userModel.findById(req.user._id);
-    console.log("🚀 ~= ~ req.user.id:", req.user.id);
     if (!user) {
-      return res.status(404).json({ error: "User  not found" });
+      return res.status(404).json({ error: i18next.t("recent.userNotFound") });
     }
+
+    // Pagination options
     const options = {
       sort: { createdAt: -1 },
       lean: true,
-      offset: (page - 1) * limit,
-      limit: limit
+      page,
+      limit
     };
-    const recentPhotos = await photoModel.paginate({ userId: req.user.id,isEdited: false }, options);
-    if (!recentPhotos.docs) {
-      console.log("🚀 ~ getRecentPhotos ~ recentPhotos:", recentPhotos)
-      return res.status(404).json({ message: "Recent Photos not found by this userID" });
+
+    // Fetch paginated recent photos
+    const recentPhotos = await photoModel.paginate({ userId: req.user.id, isEdited: false }, options);
+
+    // Handle no photos found
+    if (!recentPhotos.docs.length) {
+      return res.status(200).json({
+        message: i18next.t("recent.noRecentPhotos"),
+        recentPhotos: [],
+        totalPages: recentPhotos.totalPages || 0,
+        currentPage: recentPhotos.page,
+        totalDocs: recentPhotos.totalDocs || 0,
+      });
     }
+
+    // Return paginated recent photos
     return res.status(200).json({
-      message: "Recent Photos",
+      message: i18next.t("recent.recentPhotos"),
       recentPhotos: recentPhotos.docs,
       totalPages: recentPhotos.totalPages,
-      currentPage: page,
-      totalDocs: recentPhotos.totalDocs
+      currentPage: recentPhotos.page,
+      totalDocs: recentPhotos.totalDocs,
     });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error("Error fetching recent photos:", err);
+    return res
+      .status(500)
+      .json({ error: i18next.t("recent.serverError") || err.message });
   }
 };
 //get all edited photos....
 const getAllEditedPhotos = async (req, res) => {
   try {
-    const { page = 1, limit = 10 } = req.query;
+    // Ensure valid pagination values
+    const page = Math.max(parseInt(req.query.page) || 1, 1);
+    const limit = Math.max(parseInt(req.query.limit) || 10, 1);
+
+    // Check if user exists
     const user = await userModel.findById(req.user._id);
     if (!user) {
-      return res.status(404).json({ error: "User not found" });
+      return res.status(404).json({ error: i18next.t("edited.userNotFound") });
     }
 
+    // Pagination options
     const options = {
       sort: { updatedAt: -1 },
       lean: true,
-      offset: (page - 1) * limit,
-      limit: limit
+      page,
+      limit
     };
 
-    const editedPhotos = await photoModel.paginate(
-      { userId: req.user.id, isEdited: true },
-      options
-    );
+    // Fetch paginated edited photos
+    const editedPhotos = await photoModel.paginate({ userId: req.user.id, isEdited: true }, options);
 
-    // If no edited photos are found, return an empty array with pagination info
-    if (!editedPhotos.docs || editedPhotos.docs.length === 0) {
+    // Handle no edited photos found
+    if (!editedPhotos.docs.length) {
       return res.status(200).json({
-        message: "No edited photos found by this userID",
+        message: i18next.t("edited.noEditedPhotos"),
         editedPhotos: [],
         totalPages: editedPhotos.totalPages || 0,
-        currentPage: page,
+        currentPage: editedPhotos.page,
         totalDocs: editedPhotos.totalDocs || 0
       });
     }
 
+    // Return paginated edited photos
     return res.status(200).json({
-      message: "All edited photos",
+      message: i18next.t("edited.allEditedPhotos"),
       editedPhotos: editedPhotos.docs,
       totalPages: editedPhotos.totalPages,
-      currentPage: page,
+      currentPage: editedPhotos.page,
       totalDocs: editedPhotos.totalDocs
     });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error("Error fetching edited photos:", err);
+    return res
+      .status(500)
+      .json({ error: i18next.t("edited.serverError") || err.message });
   }
 };
 
 const deletePhoto = async (req, res) => {
   try {
-    const photoId = req.params.id;
+    const { id: photoId } = req.params;
+
+    // Validate user existence
     const user = await userModel.findById(req.user._id);
     if (!user) {
-      return res.status(404).json({ message: "User not found by this ID" });
+      return res.status(404).json({ message: i18next.t("delete.userNotFound") });
     }
+
+    // Fetch the photo
     const photo = await photoModel.findById(photoId);
     if (!photo) {
-      return res.status(404).json({ message: "Photo not found by this ID" });
+      return res.status(404).json({ message: i18next.t("delete.photoNotFound") });
     }
-  //  const s3Url = new URL(photo.picture_url);
-  //  const s3Key = s3Url.pathname.startsWith('/') ? s3Url.pathname.substring(1) : s3Url.pathname;
-  //   const params = {
-  //     Bucket: process.env.S3_BUCKET_NAME,
-  //     Key: s3Key,
-  //   };
-    const deletedPhoto = await photoModel.findByIdAndDelete(photoId);
-    if (!deletedPhoto) {
-      return res.status(404).json({ message: "Photo not found by this ID" });
+
+    // Ensure user owns the photo before deletion (security check)
+    if (photo.userId.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: i18next.t("delete.unauthorized") });
     }
-    // await s3.send(new DeleteObjectCommand(params));
-    return res.status(200).json({ message: "Photo deleted successfully"});
-  
+
+    // Delete the photo
+    await photoModel.findByIdAndDelete(photoId);
+
+    return res.status(200).json({ message: i18next.t("delete.photoDeleted") });
+
   } catch (error) {
-    console.log("Error: ", error);
-    return res.status(500).json({ message: "Internal Server Error" });
+    console.error("Error deleting photo:", error);
+    return res.status(500).json({ message: i18next.t("delete.serverError") || error.message });
   }
 };
 // controller for delete multiple image
@@ -192,13 +229,14 @@ const deletebulkimage=async(req,res)=>{
     const photoIds = req.body.photoIds;
     const user = await userModel.findById(req.user._id);
     if (!user) {
-      return res.status(404).json({ message: "User not found by this ID" });
+      return res.status(404).json({ message: i18next.t('deleteBulk.userNotFound') });
+
     }
     const deletedPhotos = await photoModel.deleteMany({ userId: req.user.id, _id: { $in: photoIds } });
     if (deletedPhotos.deletedCount === 0) {
-      return res.status(404).json({ message: "No photos found by this ID" });
+      return res.status(404).json({ message:i18next.t('deleteBulk.photoNotFound') });
     }
-    return res.status(200).json({ message: "Photos deleted successfully" });
+    return res.status(200).json({ message:i18next.t ('deleteBulk.photosDeleted') });
   } catch (error) {
     console.log("Error: ", error);
     return res.status(500).json({ message: "Internal Server Error" });
@@ -212,16 +250,16 @@ const updatephoto = async (req, res) => {
     const user = await userModel.findById(req.user._id);
 
     if (!user) {
-      return res.status(404).json({ error: "User not found" });
+      return res.status(404).json({ error: i18next.t('update.userNotFound') });
     }
 
     let photo = await photoModel.findById(photoId);
     if (!photo) {
-      return res.status(404).json({ error: "Photo not found" });
+      return res.status(404).json({ error: i18next.t('update.photoNotFound') });
     }
 
     if (photo.userId.toString() !== req.user.id) {
-      return res.status(403).json({ error: "Unauthorized" });
+      return res.status(403).json({ error: i18next.t('update.unauthorized') });
     }
 
     if (name) {
@@ -240,8 +278,8 @@ const updatephoto = async (req, res) => {
     await photo.save();
 
     // Prepare notification message and title
-    const notificationMessage = "Your photo has been successfully updated.";
-    const notificationTitle = "Photo Updated";
+    const notificationMessage = i18next.t('update.photoUpdatedMessage');
+    const notificationTitle = i18next.t('update.photoUpdatedTitle');
     const notificationParams = { photoId: photo._id }; // Include photoId in params if needed
 
     // In-App Notification
@@ -267,24 +305,24 @@ const updatephoto = async (req, res) => {
       );
     }
 
-    return res.status(200).json({ code: 200, message: "Photo updated", photo });
+    return res.status(200).json({ code: 200, message: i18next.t('update.photoUpdated'), photo });
   } catch (error) {
     console.error("Error While Updating Photo:", error);
-    res.status(500).json({ code: 500, error: "Error While Updating Photo" });
+    res.status(500).json({ code: 500, error: i18next.t('update.updateError') });
   }
 };
+
 
 const photoId=async (req,res)=>{
   try {
     const photoId = req.params.id;
     const photo = await photoModel.findById(photoId);
     if (!photo) {
-      return res.status(404).json({ message: "Photo not found" });
+      return res.status(404).json({ message:i18next.t('getById.photoNotFound') });
     }
     res.status(200).json(photo);
   } catch (error) {
-    console.log("Error : ", error);
-    return res.status(500).json({ message: "Server error: " + error.message });
+    return res.status(500).json({ message:i18next.t('getById.serverError') });
   }
 }
 

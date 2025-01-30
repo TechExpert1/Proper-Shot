@@ -10,7 +10,7 @@ const generateRandomString = require('../utils/generateRandomString');
 const otpResetModel = require('../models/otpResetModel');
 const accountMail = require("../utils/sendEmail");
 const Notification = require('../models/Notification.js');
-
+const i18next =require("../config/i18n.js")
 
 
 const normalizePhoneNumber = (phoneNumber) => {
@@ -27,39 +27,40 @@ const normalizePhoneNumber = (phoneNumber) => {
 const userSignUp = async (req, res) => {
   try {
     const { name, email, phoneNumber, password, confirmPassword, deviceToken, countrycode, country } = req.body;
-
+    const userLanguage = req.user?.language || 'en';
+    
+    await i18next.changeLanguage(userLanguage);
+    
     if (!name || !email || !phoneNumber || !password) {
-      return res.status(400).json({ message: "Please fill in all fields" });
+      return res.status(400).json({ message: i18next.t('signup.fillAllFields') });
     }
 
-    const trimmedEmail = email.trim();
-    const lowercaseEmail = trimmedEmail.toLowerCase();
+    const trimmedEmail = email.trim().toLowerCase();
     const existingPhoneNumberUser = await userModel.findOne({ phoneNumber });
     if (existingPhoneNumberUser) {
-      return res.status(400).json({ message: "This phone number is already in use" });
+      return res.status(400).json({ message: i18next.t('signup.phoneNumberInUse') });
     }
     if (password.length < 8) {
-      return res.status(400).json({ message: "Password should be at least 8 characters" });
+      return res.status(400).json({ message: i18next.t('signup.passwordLength') });
     }
     if (password !== confirmPassword) {
-      return res.status(400).json({ message: "Passwords do not match" });
+      return res.status(400).json({ message: i18next.t('signup.passwordsNotMatch') });
     }
-
-    const existingUser = await userModel.findOne({ email: lowercaseEmail });
+    
+    const existingUser = await userModel.findOne({ email: trimmedEmail });
     if (existingUser) {
-      return res.status(400).json({ message: "Email already in use" });
+      return res.status(400).json({ message: i18next.t('signup.emailInUse') });
     }
-
+    
     const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Calculate trial dates
+    
     const trialStartDate = new Date();
     const trialEndDate = new Date();
     trialEndDate.setDate(trialStartDate.getDate() + 3);
-
+    
     const newUser = new userModel({
       name,
-      email: lowercaseEmail,
+      email: trimmedEmail,
       phoneNumber,
       password: hashedPassword,
       deviceToken,
@@ -68,10 +69,10 @@ const userSignUp = async (req, res) => {
       trialstartin: trialStartDate,
       trialendin: trialEndDate,
     });
-
+    
     const saveUser = await newUser.save();
     const { password: _, ...userData } = saveUser._doc;
-
+    
     const accessToken = jwt.sign(
       {
         isAdmin: saveUser.isAdmin,
@@ -80,44 +81,43 @@ const userSignUp = async (req, res) => {
       process.env.SecretKey,
       { expiresIn: "365d" }
     );
-
-    // Send a welcome notification
+    
     if (deviceToken) {
-      const message = "Welcome to Proper Shot app! Your 3-day free trial starts now.";
-      const title = "Welcome to Proper Shot!";
-      const type = "WELCOME_NOTIFICATION";
-      const params = { trialDays: 3 };
-
-      sendPushNotification(deviceToken, title, message, type, params);
+      sendPushNotification(
+        deviceToken,
+        i18next.t('signup.welcomeTitle'),
+        i18next.t('signup.welcomeMessage'),
+        "WELCOME_NOTIFICATION",
+        { trialDays: 3 }
+      );
     }
-
-    const notificationMessage = "Welcome to Proper Shot app! Your 3-day free trial starts now.";
-    const notificationTitle = "Welcome to Proper Shot!";
-
+    
     const newNotification = new Notification({
       recipient: saveUser._id,
-      heading: notificationTitle,
-      message: notificationMessage,
+      heading: i18next.t('signup.welcomeTitle'),
+      message: i18next.t('signup.welcomeMessage'),
       params: { trialDays: 3 },
     });
     await newNotification.save();
-
-    // Schedule a notification for the trial end date
+    
     setTimeout(async () => {
-      const trialEndMessage = "Your 3-day free trial has ended. Subscribe now to continue enjoying Proper Shot.";
-      const trialEndTitle = "Trial Ended";
-
-      sendPushNotification(deviceToken, trialEndTitle, trialEndMessage, "TRIAL_END_NOTIFICATION", {});
-
+      sendPushNotification(
+        deviceToken,
+        i18next.t('signup.trialEndedTitle'),
+        i18next.t('signup.trialEndedMessage'),
+        "TRIAL_END_NOTIFICATION",
+        {}
+      );
+      
       const trialEndNotification = new Notification({
         recipient: saveUser._id,
-        heading: trialEndTitle,
-        message: trialEndMessage,
+        heading: i18next.t('signup.trialEndedTitle'),
+        message: i18next.t('signup.trialEndedMessage'),
         params: {},
       });
       await trialEndNotification.save();
-    }, 3 * 24 * 60 * 60 * 1000); // 3 days in milliseconds
-
+    }, 3 * 24 * 60 * 60 * 1000);
+    
     return res.status(200).json({ ...userData, accessToken });
   } catch (error) {
     console.error("Error in userSignUp:", error);
@@ -132,12 +132,18 @@ const userLogin = async (req, res) => {
     });
 
     if (!user) {
-      return res.status(401).json({ code: 401, error: "User not found" });
+      return res.status(401).json({
+        code: 401,
+        error: i18next.t("login.userNotFound"),
+      });
     }
 
     const comparepass = await bcrypt.compare(req.body.password, user.password);
     if (!comparepass) {
-      return res.status(401).json({ code: 401, error: "Invalid Password" });
+      return res.status(401).json({
+        code: 401,
+        error: i18next.t("login.invalidPassword"),
+      });
     }
 
     user.deviceToken = req.body.deviceToken;
@@ -155,8 +161,8 @@ const userLogin = async (req, res) => {
     );
 
     if (user.deviceToken) {
-      const title = "Welcome Back!";
-      const message = "You have successfully logged in.";
+      const title = i18next.t("login.welcomeBack");
+      const message = i18next.t("login.loginMessage");
       const type = "login";
       const params = { userId: user._id };
 
@@ -165,15 +171,19 @@ const userLogin = async (req, res) => {
 
     res.status(200).json({
       code: 200,
-      message: "User Logged In Successfully",
+      message: i18next.t("login.loginSuccess"),
       ...others,
       accessToken,
     });
   } catch (err) {
     console.log(err);
-    res.status(500).json({ code: 500, error: "Error Occurred" });
+    res.status(500).json({
+      code: 500,
+      error: "Error Occurred",
+    });
   }
 };
+
 // controller for getting single user detail
 const find = async (req, res) => {
   try {
@@ -193,45 +203,50 @@ const forgotPassword = async (req, res) => {
   const { email } = req.body;
   try {
     if (!email) {
-      return res.status(400).json({ message: "Please enter an email" })
+      return res.status(400).json({ message: i18next.t("forgotPassword.enterEmail") });
     }
+
     const trimmedEmail = email.trim();
     const lowercaseEmail = trimmedEmail.toLowerCase();
-    const user = await userModel.findOne({
-      email: lowercaseEmail
-    });
+    const user = await userModel.findOne({ email: lowercaseEmail });
+
     if (!user) {
-      return res.status(401).json({ error: "User does not exist by this email" });
+      return res.status(401).json({ error: i18next.t("forgotPassword.userNotExist") });
     }
+
     await otpResetModel.deleteMany({ userId: user._id });
+
     const otp = otpGenerate();
     const resetOtp = new otpResetModel({
       userId: user.id,
       otp,
     });
+
     await resetOtp.save();
     await accountMail(user.email, "Reset Password OTP", otp);
-    res.status(200).json({ message: "Reset OTP Sent to your given email" });
+
+    res.status(200).json({ message: i18next.t("forgotPassword.resetOTPSent") });
+
   } catch (error) {
     console.log(error.message);
     res.status(500).json({
       code: 500,
-      error: "Error while Requesting Password Reset Request ",
+      error: i18next.t("forgotPassword.errorRequestingReset"),
     });
-    console.log("🚀 ~ res.status ~ error:", error)
   }
 };
 //Verify OTP
 const VerifyOTP = async (req, res) => {
   try {
     const resetOtp = await otpResetModel.findOne({ otp: req.body.otp });
+
     if (!resetOtp) {
-      return res.status(404).json({ message: "Invalid OTP" });
+      return res.status(404).json({ message: i18next.t("verifyOTP.invalidOTP") });
     }
 
     res.status(200).json({ data: resetOtp });
   } catch (error) {
-    res.status(500).json({ error: "Server Error" });
+    res.status(500).json({ error: i18next.t("verifyOTP.serverError") });
   }
 };
 //Reset Password
@@ -242,11 +257,10 @@ const resetPassword = async (req, res) => {
     // userId: req.body.userId,
   });
   if (!resetOtp) {
-    return res.status(401).json({ message: "Invalid OTP" });
+    return res.status(401).json({ message: i18next.t("Invalid OTP") });
   }
   // const salt = await bcrypt.genSalt(15);
   const hashpassword = await bcrypt.hash(password, 10);
-  // console.log("aaaaaaaaaaaaaaaaaaaaaaa");
   try {
     await userModel.findByIdAndUpdate(resetOtp.userId, {
       $set: {
@@ -256,10 +270,10 @@ const resetPassword = async (req, res) => {
     await otpResetModel.deleteMany({ userId: resetOtp.userId });
     return res
       .status(200)
-      .json({ message: "Password Updated successfully" });
+      .json({ message:i18next.t("Password Updated successfully") });
   } catch (error) {
     console.log(error);
-    res.status(500).json({ message: "Error While Reset Password" });
+    res.status(500).json({ message: i18next.t("Error While Reset Password") });
   }
 
 };
@@ -294,10 +308,7 @@ const subscription = async (req, res) => {
         walletBalance: balance,
         isGroupActive: true
       });
-
-      console.log("Payment successful and user model updated.");
     } else {
-      console.log("Payment failed or not confirmed.");
     }
   } catch (error) {
 

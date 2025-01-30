@@ -3,6 +3,7 @@ const multer = require('multer');
 const dotenv = require('dotenv');
 const path = require('path');
 const bcrypt = require('bcryptjs')
+const i18next =require("../config/i18n.js")
 dotenv.config()
 
 const { S3Client } = require("@aws-sdk/client-s3");
@@ -49,7 +50,7 @@ const updateProfile = async (req, res) => {
     const user = await userModel.findById(req.user._id);
 
     if (!user) {
-      return res.status(404).json({ error: 'User not found' });
+      return res.status(404).json({ error:i18next.t('updateProfile.userNotFound') });
     }
 
     let updatedFields = {};
@@ -72,7 +73,7 @@ const updateProfile = async (req, res) => {
       });
 
       if (phoneNumberExists) {
-        return res.status(400).json({ message: "Phone number already exists" });
+        return res.status(400).json({ message:i18next.t('updateProfile.phoneNumberExists')});
       }
       updatedFields.phoneNumber = req.body.phoneNumber;
     }
@@ -80,7 +81,7 @@ const updateProfile = async (req, res) => {
     // Update password if provided
     if (req.body.password && req.body.confirmPassword) {
       if (req.body.password !== req.body.confirmPassword) {
-        return res.status(400).json({ message: "Password Not Matched" });
+        return res.status(400).json({ message:i18next.t('updateProfile.passwordNotMatched')});
       }
 
       const salt = await bcrypt.genSalt(10);
@@ -95,21 +96,21 @@ const updateProfile = async (req, res) => {
         { $set: updatedFields },
         { new: true }
       );
-      console.log("🚀 ~ exports.updateProfile= ~ updateUser:", updateUser);
+
 
       if (!updateUser) {
         return res.status(401).json({ code: 401, error: "User not found" });
       }
 
       const { password, ...other } = JSON.parse(JSON.stringify(updateUser));
-      return res.status(200).json({ code: 200, message: "User updated successfully", updateUser: { ...other } });
+      return res.status(200).json({ code: 200, message: i18next.t('updateProfile.userUpdated'),updateUser: { ...other } });
     } else {
-      return res.status(400).json({ code: 400, message: "No fields provided for update" });
+      return res.status(400).json({ code: 400, message:i18next.t('updateProfile.noFieldsProvided')});
     }
 
   } catch (error) {
     console.log(error);
-    res.status(500).json({ code: 500, error: "Error While Updating Data" });
+    res.status(500).json({ code: 500, error:i18next.t('updateProfile.errorUpdating')});
   }
 };
 
