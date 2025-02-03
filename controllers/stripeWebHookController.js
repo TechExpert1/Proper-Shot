@@ -157,7 +157,7 @@ const confirmPayment = async (req, res) => {
     
     user.subscription_status = "active";
     user.subscId = paymentIntent.id;
-    user.lastIntent = paymentIntent;
+    // user.lastIntent = paymentIntent;
     await user.save();
 
     res.status(200).json({
