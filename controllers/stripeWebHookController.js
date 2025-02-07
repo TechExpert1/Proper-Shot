@@ -196,51 +196,32 @@ const confirmPayment = async (req, res) => {
 // cancel subscription
 const cancelSubscription = async (req, res) => {
   try {
-    const { paymentIntentId, userId } = req.body;
-    const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
-    
-    if (!paymentIntent) {
-      return res.status(404).json({
-        code: "failed",
-        message: "PaymentIntent not found.",
-        intent: null
-      });
+    const user = await User.findById(req.user._id);
+
+    if (!user) {
+      return res.status(404).json({ code: "failed", message: "User not found." });
     }
 
-    // Check if payment is already canceled or succeeded
-    if (paymentIntent.status === "canceled") {
-      return res.status(400).json({
-        code: "failed",
-        message: "Payment is already canceled.",
-        intent: paymentIntent
-      });
+    if (!user.subscId) {
+      return res.status(400).json({ code: "failed", message: "No active subscription found." });
     }
-    const canceledPayment = await stripe.paymentIntents.cancel(paymentIntentId);
-    const user = await User.findById(userId);
-    if (!user) {
-      return res.status(404).json({
-        code: "failed",
-        message: "User not found.",
-        intent: canceledPayment
-      });
-    }
+
+    // Cancel payment intent if it exists
+    await stripe.paymentIntents.cancel(user.subscId);
+
+    // Update user's subscription status
     user.subscription_status = "canceled";
-    user.subscId = null; 
+    user.subscId = null;
     await user.save();
-    res.status(200).json({
-      code: "success",
-      message: "Payment canceled successfully.",
-      intent: canceledPayment
-    });
+
+    res.status(200).json({ code: "success", message: "Subscription canceled successfully." });
   } catch (error) {
-    console.error("Error canceling payment:", error.message);
-    res.status(500).json({
-      code: "failed",
-      message: "Failed to cancel payment.",
-      intent: null
-    });
+    console.error("Error canceling subscription:", error.message);
+    res.status(500).json({ code: "failed", message: "Failed to cancel subscription." });
   }
 };
+
+
 
 module.exports = {
   stripeSubscriptionWebhook,

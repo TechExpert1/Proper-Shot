@@ -1,0 +1,173 @@
+{
+    "signup": {
+        "fillAllFields": "Bitte füllen Sie alle Felder aus",
+        "phoneNumberInUse": "Diese Telefonnummer wird bereits verwendet",
+        "passwordLength": "Das Passwort sollte mindestens 8 Zeichen lang sein",
+        "passwordsNotMatch": "Die Passwörter stimmen nicht überein",
+        "emailInUse": "E-Mail wird bereits verwendet",
+        "welcomeMessage": "Willkommen bei SnapEstate! Ihr 3-tägiges kostenloses Probeabo beginnt jetzt.",
+        "welcomeTitle": "Willkommen bei SnapEstate!",
+        "trialEndedMessage": "Ihr 3-tägiges kostenloses Probeabo ist abgelaufen. Abonnieren Sie jetzt, um SnapEstate weiterhin zu genießen.",
+        "trialEndedTitle": "Probezeit beendet"
+    },
+    "login": {
+        "userNotFound": "Benutzer nicht gefunden",
+        "invalidPassword": "Ungültiges Passwort",
+        "loginSuccess": "Benutzer erfolgreich eingeloggt",
+        "welcomeBack": "Willkommen zurück!",
+        "loginMessage": "Sie haben sich erfolgreich eingeloggt."
+    },
+    "forgotPassword": {
+        "enterEmail": "Bitte geben Sie eine E-Mail-Adresse ein",
+        "userNotExist": "Kein Benutzer mit dieser E-Mail-Adresse gefunden",
+        "resetOTPSent": "Zurücksetz-OTP wurde an Ihre E-Mail gesendet",
+        "errorRequestingReset": "Fehler beim Anfordern der Passwortzurücksetzung"
+    },
+    "verifyOTP": {
+        "invalidOTP": "Ungültiges OTP",
+        "serverError": "Serverfehler"
+    },
+    "resetPassword": {
+        "invalidOTP": "Ungültiges OTP",
+        "passwordUpdated": "Passwort erfolgreich aktualisiert",
+        "errorResettingPassword": "Fehler beim Zurücksetzen des Passworts"
+    },
+    "subscription": {
+        "paymentSuccess": "Zahlung erfolgreich und Benutzerprofil aktualisiert.",
+        "paymentFailed": "Zahlung fehlgeschlagen oder nicht bestätigt."
+    },
+    "googleLogin": {
+        "errorLoggingIn": "Fehler beim Anmelden mit Google: "
+    },
+    "adminDashboard": {
+        "errorGettingData": "Fehler beim Abrufen der Dashboard-Daten"
+    },
+    "adminRegistration": {
+        "adminExists": "Ein Administrator mit dieser E-Mail existiert bereits",
+        "passwordNotMatched": "Passwörter stimmen nicht überein",
+        "adminRegistered": "Administrator registriert"
+    },
+    "adminLogin": {
+        "loginSuccess": "Benutzer erfolgreich eingeloggt",
+        "errorOccurred": "Ein Fehler ist aufgetreten"
+    },
+    "allUsers": {
+        "errorGettingUsers": "Fehler beim Abrufen der Benutzerdaten"
+    },
+    "getUserDetails": {
+        "userNotFound": "Benutzer nicht gefunden",
+        "userDetails": "Benutzerdetails",
+        "errorGettingDetails": "Fehler beim Abrufen der Benutzerdetails: "
+    },
+    "getAllAdmins": {
+        "errorGettingAdmins": "Fehler beim Abrufen der Administratoren"
+    },
+    "editProfile": {
+        "userNotFound": "Benutzer nicht gefunden",
+        "userUpdated": "Benutzer erfolgreich aktualisiert",
+        "errorUpdating": "Fehler beim Aktualisieren der Daten"
+    },
+    "deleteAdminUser": {
+        "userNotFound": "Benutzer nicht gefunden",
+        "userDeleted": "Benutzer erfolgreich gelöscht",
+        "errorProcessing": "Fehler bei der Verarbeitung der Anfrage"
+    },
+    "photo": {
+        "create": {
+            "userNotFound": "Benutzer nicht gefunden",
+            "pictureUploaded": "Bild hochgeladen",
+            "uploadError": "Fehler beim Hochladen des Bildes"
+        },
+        "gallery": {
+            "userNotFound": "Benutzer nicht gefunden",
+            "noPhotosFound": "Keine Fotos für diese Benutzer-ID gefunden",
+            "allPhotos": "Alle Fotos"
+        },
+        "recent": {
+            "userNotFound": "Benutzer nicht gefunden",
+            "noRecentPhotos": "Keine aktuellen Fotos für diese Benutzer-ID gefunden",
+            "recentPhotos": "Aktuelle Fotos"
+        },
+        "edited": {
+            "userNotFound": "Benutzer nicht gefunden",
+            "noEditedPhotos": "Keine bearbeiteten Fotos für diese Benutzer-ID gefunden",
+            "allEditedPhotos": "Alle bearbeiteten Fotos"
+        },
+        "delete": {
+            "userNotFound": "Benutzer mit dieser ID nicht gefunden",
+            "photoNotFound": "Foto mit dieser ID nicht gefunden",
+            "photoDeleted": "Foto erfolgreich gelöscht",
+            "serverError": "Interner Serverfehler"
+        },
+        "deleteBulk": {
+            "userNotFound": "Benutzer mit dieser ID nicht gefunden",
+            "noPhotosFound": "Keine Fotos mit dieser ID gefunden",
+            "photosDeleted": "Fotos erfolgreich gelöscht"
+        },
+        "update": {
+            "userNotFound": "Benutzer nicht gefunden",
+            "photoNotFound": "Foto nicht gefunden",
+            "unauthorized": "Nicht autorisiert",
+            "photoUpdatedMessage": "Ihr Foto wurde erfolgreich aktualisiert.",
+            "photoUpdatedTitle": "Foto aktualisiert",
+            "photoUpdated": "Foto aktualisiert",
+            "updateError": "Fehler beim Aktualisieren des Fotos"
+        },
+        "getById": {
+            "photoNotFound": "Foto nicht gefunden",
+            "serverError": "Serverfehler: "
+        }
+    },
+    "updateProfile": {
+        "userNotFound": "Benutzer nicht gefunden",
+        "phoneNumberExists": "Telefonnummer existiert bereits",
+        "passwordNotMatched": "Passwörter stimmen nicht überein",
+        "userUpdated": "Benutzer erfolgreich aktualisiert",
+        "noFieldsProvided": "Keine Felder zur Aktualisierung bereitgestellt",
+        "errorUpdating": "Fehler beim Aktualisieren der Daten"
+    },
+    "stripeSubscriptionWebhook": {
+        "missingStripeSignature": "Webhook-Fehler: Fehlender stripe-signature-Header.",
+        "webhookSignatureError": "Webhook-Fehler: {error}",
+        "customerCreated": "Stripe-Kunden-ID für Benutzer gespeichert: {email}",
+        "noUserFoundForEmail": "Kein Benutzer für die angegebene E-Mail gefunden.",
+        "customerSubscriptionCreated": "Abonnement für Benutzer erstellt: {email}",
+        "noUserFoundForStripeId": "Kein Benutzer für die angegebene Stripe-Kunden-ID gefunden.",
+        "unhandledEvent": "Nicht behandeltes Ereignis: {eventType}"
+    },
+    "createSubscription": {
+        "userNotFound": "Benutzer nicht gefunden",
+        "alreadyHasSubscription": "Sie haben bereits ein aktives Abonnement.",
+        "invalidPriceId": "Ungültige Preis-ID.",
+        "paymentIntentError": "Fehler beim Erstellen von PaymentIntent",
+        "subscriptionStart": "Abonnement gestartet am {startDate}",
+        "subscriptionEnd": "Abonnement endet am {endDate}"
+    },
+    "confirmPayment": {
+        "paymentIntentNotFound": "PaymentIntent nicht gefunden.",
+        "paymentNotSuccessful": "Zahlung nicht erfolgreich.",
+        "userNotFound": "Benutzer nicht gefunden.",
+        "paymentConfirmed": "Zahlung bestätigt, Abonnement aktiviert.",
+        "paymentConfirmationError": "Fehler bei der Zahlungsbestätigung."
+    },
+    "cancelSubscription": {
+        "emailRequired": "E-Mail ist erforderlich.",
+        "userNotFound": "Benutzer oder Abonnement nicht gefunden.",
+        "subscriptionCanceled": "Abonnement erfolgreich gekündigt.",
+        "cancelSubscriptionError": "Fehler beim Kündigen des Abonnements.",
+        "cancelSubscriptionStripeError": "Fehler beim Kündigen des Abonnements. Stripe hat keine gültige Antwort zurückgegeben."
+    },
+    "notifications": {
+        "failedToFetch": "Fehler beim Abrufen der Benachrichtigungen",
+        "success": "Benachrichtigungen erfolgreich abgerufen"
+    },
+    "deletenotifications": {
+        "invalidNotificationId": "Ungültige Benachrichtigungs-ID",
+        "notificationNotFound": "Benachrichtigung nicht gefunden",
+        "notificationDeleted": "Benachrichtigung erfolgreich gelöscht",
+        "deleteNotificationError": "Fehler beim Löschen der Benachrichtigung"
+    },
+    "welcome": {
+        "title": "Willkommen bei SnapEstate!"
+    }
+}
