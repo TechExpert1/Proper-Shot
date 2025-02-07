@@ -5,9 +5,9 @@
         "passwordLength": "Le mot de passe doit contenir au moins 8 caractères",
         "passwordsNotMatch": "Les mots de passe ne correspondent pas",
         "emailInUse": "L'email est déjà utilisé",
-        "welcomeMessage": "Bienvenue sur l'application Proper Shot ! Votre essai gratuit de 3 jours commence maintenant.",
-        "welcomeTitle": "Bienvenue sur Proper Shot !",
-        "trialEndedMessage": "Votre essai gratuit de 3 jours est terminé. Abonnez-vous maintenant pour continuer à profiter de Proper Shot.",
+        "welcomeMessage": "Bienvenue sur l'application SnapEstate  ! Votre essai gratuit de 3 jours commence maintenant.",
+        "welcomeTitle": "Bienvenue sur SnapEstate  !",
+        "trialEndedMessage": "Votre essai gratuit de 3 jours est terminé. Abonnez-vous maintenant pour continuer à profiter de SnapEstate .",
         "trialEndedTitle": "Essai terminé"
     },
     "login": {
@@ -187,6 +187,6 @@
         }
     },
     "welcome": {
-        "title": "Bienvenue sur Proper Shot !"
+        "title": "Bienvenue sur SnapEstate  !"
     }
 }

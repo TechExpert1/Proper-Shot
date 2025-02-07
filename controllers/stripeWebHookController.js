@@ -197,8 +197,6 @@ const confirmPayment = async (req, res) => {
 const cancelSubscription = async (req, res) => {
   try {
     const { paymentIntentId, userId } = req.body;
-
-    // Retrieve the PaymentIntent from Stripe
     const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
     
     if (!paymentIntent) {
@@ -217,18 +215,7 @@ const cancelSubscription = async (req, res) => {
         intent: paymentIntent
       });
     }
-    if (paymentIntent.status === "succeeded") {
-      return res.status(400).json({
-        code: "failed",
-        message: "Payment already succeeded and cannot be canceled.",
-        intent: paymentIntent
-      });
-    }
-
-    // Cancel the PaymentIntent
     const canceledPayment = await stripe.paymentIntents.cancel(paymentIntentId);
-    
-    // Update user subscription status if applicable
     const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({
@@ -237,11 +224,9 @@ const cancelSubscription = async (req, res) => {
         intent: canceledPayment
       });
     }
-
     user.subscription_status = "canceled";
     user.subscId = null; 
     await user.save();
-
     res.status(200).json({
       code: "success",
       message: "Payment canceled successfully.",

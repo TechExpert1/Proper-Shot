@@ -5,9 +5,9 @@
         "passwordLength": "La contraseña debe tener al menos 8 caracteres",
         "passwordsNotMatch": "Las contraseñas no coinciden",
         "emailInUse": "El correo electrónico ya está en uso",
-        "welcomeMessage": "¡Bienvenido a la aplicación Proper Shot! Tu prueba gratuita de 3 días comienza ahora.",
-        "welcomeTitle": "¡Bienvenido a Proper Shot!",
-        "trialEndedMessage": "Tu prueba gratuita de 3 días ha terminado. Suscríbete ahora para seguir disfrutando de Proper Shot.",
+        "welcomeMessage": "¡Bienvenido a la aplicación SnapEstate ! Tu prueba gratuita de 3 días comienza ahora.",
+        "welcomeTitle": "¡Bienvenido a SnapEstate !",
+        "trialEndedMessage": "Tu prueba gratuita de 3 días ha terminado. Suscríbete ahora para seguir disfrutando de SnapEstate ",
         "trialEndedTitle": "Prueba Finalizada"
     },
     "login": {
@@ -197,6 +197,6 @@
         "deleteNotificationsError": "Error al eliminar notificaciones"
     },
     "welcome": {
-        "title": "¡Bienvenido a Proper Shot!"
+        "title": "¡Bienvenido a SnapEstate !"
     }
 }

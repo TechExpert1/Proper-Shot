@@ -5,9 +5,9 @@
         "passwordLength": "Password should be at least 8 characters",
         "passwordsNotMatch": "Passwords do not match",
         "emailInUse": "Email already in use",
-        "welcomeMessage": "Welcome to Proper Shot app! Your 3-day free trial starts now.",
-        "welcomeTitle": "Welcome to Proper Shot!",
-        "trialEndedMessage": "Your 3-day free trial has ended. Subscribe now to continue enjoying Proper Shot.",
+        "welcomeMessage": "Welcome to SnapEstate  app! Your 3-day free trial starts now.",
+        "welcomeTitle": "Welcome to SnapEstate !",
+        "trialEndedMessage": "Your 3-day free trial has ended. Subscribe now to continue enjoying SnapEstate .",
         "trialEndedTitle": "Trial Ended"
     },
     "login": {
@@ -197,6 +197,6 @@
         "deleteNotificationsError": "Failed to delete notifications"
     },
     "welcome":{
-        "title":"Welcome to Proper Shot!"
+        "title":"Welcome to SnapEstate !"
     }
 }
