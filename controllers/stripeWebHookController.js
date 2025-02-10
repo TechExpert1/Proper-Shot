@@ -202,12 +202,12 @@ const cancelSubscription = async (req, res) => {
       return res.status(404).json({ code: "failed", message: "User not found." });
     }
 
-    if (!user.subscId) {
+    if (!user.subscription_status == "canceled") {
       return res.status(400).json({ code: "failed", message: "No active subscription found." });
     }
 
     // Cancel payment intent if it exists
-    await stripe.paymentIntents.cancel(user.subscId);
+    // await stripe.paymentIntents.cancel(user.subscId);
 
     // Update user's subscription status
     user.subscription_status = "canceled";
