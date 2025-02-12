@@ -50,7 +50,7 @@ const updateProfile = async (req, res) => {
     const user = await userModel.findById(req.user._id);
 
     if (!user) {
-      return res.status(404).json({ error:i18next.t('updateProfile.userNotFound') });
+      return res.status(404).json({ error: i18next.t('update.userNotFound') });
     }
 
     let updatedFields = {};
@@ -73,7 +73,7 @@ const updateProfile = async (req, res) => {
       });
 
       if (phoneNumberExists) {
-        return res.status(400).json({ message:i18next.t('updateProfile.phoneNumberExists')});
+        return res.status(400).json({ message: i18next.t('update.phoneNumberExists') });
       }
       updatedFields.phoneNumber = req.body.phoneNumber;
     }
@@ -81,7 +81,7 @@ const updateProfile = async (req, res) => {
     // Update password if provided
     if (req.body.password && req.body.confirmPassword) {
       if (req.body.password !== req.body.confirmPassword) {
-        return res.status(400).json({ message:i18next.t('updateProfile.passwordNotMatched')});
+        return res.status(400).json({ message: i18next.t('update.passwordNotMatched') });
       }
 
       const salt = await bcrypt.genSalt(10);
@@ -97,22 +97,26 @@ const updateProfile = async (req, res) => {
         { new: true }
       );
 
-
       if (!updateUser) {
-        return res.status(401).json({ code: 401, error: "User not found" });
+        return res.status(401).json({ code: 401, error: i18next.t('update.userNotFound') });
       }
 
       const { password, ...other } = JSON.parse(JSON.stringify(updateUser));
-      return res.status(200).json({ code: 200, message: i18next.t('updateProfile.userUpdated'),updateUser: { ...other } });
+      return res.status(200).json({ 
+        code: 200, 
+        message: i18next.t('update.photoUpdatedMessage'), 
+        updateUser: { ...other } 
+      });
     } else {
-      return res.status(400).json({ code: 400, message:i18next.t('updateProfile.noFieldsProvided')});
+      return res.status(400).json({ code: 400, message: i18next.t('update.noFieldsProvided') });
     }
 
   } catch (error) {
     console.log(error);
-    res.status(500).json({ code: 500, error:i18next.t('updateProfile.errorUpdating')});
+    res.status(500).json({ code: 500, error: i18next.t('update.updateError') });
   }
 };
+
 
 
 

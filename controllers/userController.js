@@ -24,13 +24,16 @@ const normalizePhoneNumber = (phoneNumber) => {
   return null;
 };
 //Signup
-const userSignUp = async (req, res) => {
+const userSignUp = async (req, res) => {  
   try {
-    const { name, email, phoneNumber, password, confirmPassword, deviceToken, countrycode, country } = req.body;
-    const userLanguage = req.user?.language || 'en';
-    
+    const { 
+      name, email, phoneNumber, password, confirmPassword, 
+      deviceToken, countrycode, country, language 
+    } = req.body;
+
+    const userLanguage = language || 'en'; // Default 'en' if not provided
     await i18next.changeLanguage(userLanguage);
-    
+
     if (!name || !email || !phoneNumber || !password) {
       return res.status(400).json({ message: i18next.t('signup.fillAllFields') });
     }
@@ -46,18 +49,18 @@ const userSignUp = async (req, res) => {
     if (password !== confirmPassword) {
       return res.status(400).json({ message: i18next.t('signup.passwordsNotMatch') });
     }
-    
+
     const existingUser = await userModel.findOne({ email: trimmedEmail });
     if (existingUser) {
       return res.status(400).json({ message: i18next.t('signup.emailInUse') });
     }
-    
+
     const hashedPassword = await bcrypt.hash(password, 10);
-    
+
     const trialStartDate = new Date();
     const trialEndDate = new Date();
     trialEndDate.setDate(trialStartDate.getDate() + 3);
-    
+
     const newUser = new userModel({
       name,
       email: trimmedEmail,
@@ -66,13 +69,14 @@ const userSignUp = async (req, res) => {
       deviceToken,
       countrycode,
       country,
+      language: userLanguage,  // ✅ Save user language
       trialstartin: trialStartDate,
       trialendin: trialEndDate,
     });
-    
+
     const saveUser = await newUser.save();
     const { password: _, ...userData } = saveUser._doc;
-    
+
     const accessToken = jwt.sign(
       {
         isAdmin: saveUser.isAdmin,
@@ -81,7 +85,7 @@ const userSignUp = async (req, res) => {
       process.env.SecretKey,
       { expiresIn: "365d" }
     );
-    
+
     if (deviceToken) {
       sendPushNotification(
         deviceToken,
@@ -91,7 +95,7 @@ const userSignUp = async (req, res) => {
         { trialDays: 3 }
       );
     }
-    
+
     const newNotification = new Notification({
       recipient: saveUser._id,
       heading: i18next.t('signup.welcomeTitle'),
@@ -99,7 +103,7 @@ const userSignUp = async (req, res) => {
       params: { trialDays: 3 },
     });
     await newNotification.save();
-    
+
     setTimeout(async () => {
       sendPushNotification(
         deviceToken,
@@ -108,7 +112,7 @@ const userSignUp = async (req, res) => {
         "TRIAL_END_NOTIFICATION",
         {}
       );
-      
+
       const trialEndNotification = new Notification({
         recipient: saveUser._id,
         heading: i18next.t('signup.trialEndedTitle'),
@@ -117,7 +121,7 @@ const userSignUp = async (req, res) => {
       });
       await trialEndNotification.save();
     }, 3 * 24 * 60 * 60 * 1000);
-    
+
     return res.status(200).json({ ...userData, accessToken });
   } catch (error) {
     console.error("Error in userSignUp:", error);
@@ -149,6 +153,9 @@ const userLogin = async (req, res) => {
     user.deviceToken = req.body.deviceToken;
     await user.save();
 
+    // ✅ Set response language
+    await i18next.changeLanguage(user.language);
+
     const { password, ...others } = user._doc;
 
     const accessToken = jwt.sign(
@@ -172,6 +179,7 @@ const userLogin = async (req, res) => {
     res.status(200).json({
       code: 200,
       message: i18next.t("login.loginSuccess"),
+      language: user.language, // ✅ Send language in response
       ...others,
       accessToken,
     });
@@ -183,6 +191,7 @@ const userLogin = async (req, res) => {
     });
   }
 };
+
 
 // controller for getting single user detail
 const find = async (req, res) => {
@@ -315,7 +324,7 @@ const subscription = async (req, res) => {
   }
 }
 const loginWithGoogle = async (req, res) => {
-  const { idToken, deviceToken } = req.body;
+  const { idToken, deviceToken, language } = req.body;
 
   try {
     const decodedToken = JSON.parse(Buffer.from(idToken.split(".")[1], "base64").toString());
@@ -327,6 +336,7 @@ const loginWithGoogle = async (req, res) => {
     const payload = ticket.getPayload();
     const email = payload.email;
     let user = await userModel.findOne({ email });
+
     if (!user) {
       user = new userModel({
         name: payload.name,
@@ -335,20 +345,25 @@ const loginWithGoogle = async (req, res) => {
         profileImage: payload.picture || "",
         deviceToken,
         account_type: "google",
+        language: language || "en", // Save user language
       });
       await user.save();
     } else {
       user.name = payload.name;
       user.profileImage = payload.picture || user.profileImage;
-      user.deviceToken = deviceToken || user.deviceToken; await user.save();
+      user.deviceToken = deviceToken || user.deviceToken;
+      if (language) {
+        user.language = language; // Update language if provided
+      }
+      await user.save();
     }
 
-    // Generate JWT token
     const accessToken = jwt.sign(
       { isAdmin: user.isAdmin || false, _id: user._id },
       process.env.SecretKey,
       { expiresIn: "365d" }
     );
+
     const { password, ...others } = user._doc;
     res.status(200).json({ ...others, accessToken });
   } catch (error) {
@@ -356,6 +371,7 @@ const loginWithGoogle = async (req, res) => {
     res.status(400).json({ error: "Error while logging in with Google: " + error.message });
   }
 };
+
 // -----------------------admin login------------------------
 const dashboard = async (req, res) => {
   try {

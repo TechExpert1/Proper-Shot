@@ -280,7 +280,7 @@ const updatephoto = async (req, res) => {
     // Prepare notification message and title
     const notificationMessage = i18next.t('update.photoUpdatedMessage');
     const notificationTitle = i18next.t('update.photoUpdatedTitle');
-    const notificationParams = { photoId: photo._id }; // Include photoId in params if needed
+    const notificationParams = { photoId: photo._id }; 
 
     // In-App Notification
     const newNotification = new Notification({
