@@ -151,9 +151,10 @@ const userLogin = async (req, res) => {
     }
 
     user.deviceToken = req.body.deviceToken;
+  if (req.body.language) {
+    user.language = req.body.language;
+  }
     await user.save();
-
-    // ✅ Set response language
     await i18next.changeLanguage(user.language);
 
     const { password, ...others } = user._doc;
@@ -326,6 +327,7 @@ const subscription = async (req, res) => {
 const loginWithGoogle = async (req, res) => {
   const { idToken, deviceToken, language } = req.body;
 
+
   try {
     const decodedToken = JSON.parse(Buffer.from(idToken.split(".")[1], "base64").toString());
     const ticket = await client.verifyIdToken({
@@ -345,9 +347,11 @@ const loginWithGoogle = async (req, res) => {
         profileImage: payload.picture || "",
         deviceToken,
         account_type: "google",
-        language: language || "en", // Save user language
+        language: language || "en", 
       });
       await user.save();
+     
+      
     } else {
       user.name = payload.name;
       user.profileImage = payload.picture || user.profileImage;
