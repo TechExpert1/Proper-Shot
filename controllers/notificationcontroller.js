@@ -92,10 +92,36 @@ const deletenotificationsbyuser = async (req, res) => {
     res.status(500).json({ message: i18next.t('deletenotificationsbyuser.deleteNotificationsError') });
   }
 };
+// crearte notification
+const createNotification = async (req, res) => {
+  try {
+    const { recipient, heading, message, sender } = req.body;
+    if (!recipient || !message) {
+      return res.status(400).json({ error: i18next.t('notification.missingFields') });
+    }
+    const newNotification = new Notification({
+      recipient,
+      heading,
+      message,
+      sender: sender,
+    
+    });
+    await newNotification.save();
+    res.status(201).json({
+      status: 'success',
+      message: i18next.t('notification.created'),
+      data: newNotification,
+    });
+  } catch (error) {
+    console.error("Error creating notification:", error);
+    res.status(500).json({ error: i18next.t('notification.creationError') });
+  }
+};
 
 
 module.exports = {
     notifications,
     deletenotifications,
-    deletenotificationsbyuser
+    deletenotificationsbyuser,
+    createNotification
   }

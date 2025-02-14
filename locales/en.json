@@ -196,6 +196,11 @@
         "notificationsDeleted": "{deletedCount} notifications deleted successfully",
         "deleteNotificationsError": "Failed to delete notifications"
     },
+    "notification": {
+    "missingFields": "Recipient and message are required",
+    "created": "Notification created successfully",
+    "creationError": "Failed to create notification"
+},
     "welcome":{
         "title":"Welcome to SnapEstate !"
     }
