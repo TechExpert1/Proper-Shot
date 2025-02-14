@@ -250,16 +250,16 @@ const updatephoto = async (req, res) => {
     const user = await userModel.findById(req.user._id);
 
     if (!user) {
-      return res.status(404).json({ error: i18next.t('update.userNotFound') });
+      return res.status(404).json({ error: i18next.t('photo.update.userNotFound') });
     }
 
     let photo = await photoModel.findById(photoId);
     if (!photo) {
-      return res.status(404).json({ error: i18next.t('update.photoNotFound') });
+      return res.status(404).json({ error: i18next.t('photo.update.photoNotFound') });
     }
 
     if (photo.userId.toString() !== req.user.id) {
-      return res.status(403).json({ error: i18next.t('update.unauthorized') });
+      return res.status(403).json({ error: i18next.t('photo.update.unauthorized') });
     }
 
     if (name) {
@@ -278,17 +278,17 @@ const updatephoto = async (req, res) => {
     await photo.save();
 
     // Prepare notification message and title
-    const notificationMessage = i18next.t('update.photoUpdatedMessage');
-    const notificationTitle = i18next.t('update.photoUpdatedTitle');
-    const notificationParams = { photoId: photo._id }; 
+    const notificationMessage = i18next.t('photo.update.photoUpdatedMessage');
+    const notificationTitle = i18next.t('photo.update.photoUpdatedTitle');
+    const notificationParams = { photoId: photo._id };
 
     // In-App Notification
     const newNotification = new Notification({
       recipient: user._id,  // The user is the recipient
       heading: notificationTitle,
       message: notificationMessage,
-      sender: null,  // No specific sender in this case
-      params: notificationParams  // You can add photo details in params if necessary
+      sender: null,
+      params: notificationParams
     });
 
     // Save in-app notification to database
@@ -305,12 +305,13 @@ const updatephoto = async (req, res) => {
       );
     }
 
-    return res.status(200).json({ code: 200, message: i18next.t('update.photoUpdated'), photo });
+    return res.status(200).json({ code: 200, message: i18next.t('photo.update.photoUpdated'), photo });
   } catch (error) {
     console.error("Error While Updating Photo:", error);
-    res.status(500).json({ code: 500, error: i18next.t('update.updateError') });
+    res.status(500).json({ code: 500, error: i18next.t('photo.update.updateError') });
   }
 };
+
 
 
 const photoId=async (req,res)=>{
