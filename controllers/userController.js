@@ -11,7 +11,7 @@ const otpResetModel = require('../models/otpResetModel');
 const accountMail = require("../utils/sendEmail");
 const Notification = require('../models/Notification.js');
 const i18next =require("../config/i18n.js")
-
+const appleSignin  =require("apple-signin-auth")
 
 const normalizePhoneNumber = (phoneNumber) => {
 
@@ -375,7 +375,57 @@ const loginWithGoogle = async (req, res) => {
     res.status(400).json({ error: "Error while logging in with Google: " + error.message });
   }
 };
+const loginWithApple = async (req, res) => {
+  const { idToken, deviceToken, language } = req.body;
 
+  try {
+    const { email, email_verified } = await appleSignin.verifyIdToken(idToken, {
+      audience: process.env.APPLE_CLIENT_ID,
+    });
+
+    if (!email) {
+      return res.status(400).json({ error: "Unable to retrieve email from Apple ID" });
+    }
+
+    if (!email_verified) {
+      return res.status(400).json({ error: "Apple ID not verified" });
+    }
+
+    let user = await userModel.findOne({ email });
+
+    if (!user) {
+      user = new userModel({
+        name: email.split("@")[0], 
+        email,
+        password: Math.random().toString(36).slice(-8),
+        profileImage: "", 
+        deviceToken,
+        account_type: "apple",
+        language: language || "en",
+        isVerified: true,
+      });
+      await user.save();
+    } else {
+      user.deviceToken = deviceToken || user.deviceToken;
+      if (language) {
+        user.language = language; 
+      }
+      await user.save();
+    }
+
+    const accessToken = jwt.sign(
+      { isAdmin: user.isAdmin || false, _id: user._id },
+      process.env.SecretKey,
+      { expiresIn: "365d" }
+    );
+
+    const { password, ...others } = user._doc;
+    res.status(200).json({ ...others, accessToken });
+  } catch (error) {
+    console.error("Error while logging in with Apple:", error);
+    res.status(400).json({ error: "Error while logging in with Apple: " + error.message });
+  }
+};
 // -----------------------admin login------------------------
 const dashboard = async (req, res) => {
   try {
@@ -550,4 +600,4 @@ const deleteadminuser = async (req, res) => {
     res.status(500).json({ code: 500, message: 'Error while processing request' });
   }
 };
-module.exports = { userSignUp, userLogin, forgotPassword, VerifyOTP, resetPassword, subscription, find, loginWithGoogle, registerAdmin, dashboard, Loginadmin, allusers, GetUserDetails, GetAllAdmins, edittprofile, searchUsersByName, deleteadminuser }
+module.exports = { userSignUp, userLogin, forgotPassword, VerifyOTP, resetPassword, subscription, find, loginWithGoogle, registerAdmin, dashboard, Loginadmin, allusers, GetUserDetails, GetAllAdmins, edittprofile, searchUsersByName, deleteadminuser,loginWithApple }

@@ -1,5 +1,5 @@
 const express = require('express')
-const {userLogin, userSignUp, forgotPassword, VerifyOTP, resetPassword ,find,loginWithGoogle,registerAdmin,dashboard,Loginadmin,allusers,GetUserDetails,GetAllAdmins,edittprofile,searchUsersByName,deleteadminuser  } = require('../controllers/userController');
+const {userLogin, userSignUp, forgotPassword, VerifyOTP, resetPassword ,find,loginWithGoogle,registerAdmin,dashboard,Loginadmin,allusers,GetUserDetails,GetAllAdmins,edittprofile,searchUsersByName,deleteadminuser,loginWithApple  } = require('../controllers/userController');
 const authorizationMiddleware = require('../middlewares/myAuth');
 // const authorizationMiddleware = require('../middlewares/myAuth');
 // const subscription = require('../controllers/subscriptionController');
@@ -24,4 +24,5 @@ userRouter.get("/getalladmin",GetAllAdmins)
 userRouter.put("/edittadmin/:userId",edittprofile)
 userRouter.get("/search",searchUsersByName)
 userRouter.delete("/deleteadmin/:userId",deleteadminuser)
+userRouter.post("/login-with-apple",loginWithApple)
 module.exports = userRouter
