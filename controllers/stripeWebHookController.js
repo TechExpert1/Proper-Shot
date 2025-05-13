@@ -84,7 +84,17 @@ const createSubscription = async (req, res) => {
       return res.status(403).json({ error: "You already have an active subscription." });
     }
     let customerId = user.stripeAccountId;
-    if (!customerId) {
+
+    let stripeCustomer
+    
+    try {
+      stripeCustomer = await stripe.customers.retrieve(customerId);
+      
+    } catch (error) {
+      
+    }
+
+    if (!stripeCustomer) {
       const customer = await stripe.customers.create({
         name: user.username,
         email: user.email,
