@@ -194,7 +194,15 @@
     },
     "deletenotificationsbyuser": {
         "notificationsDeleted": "{deletedCount} notificaciones eliminadas con éxito",
-        "deleteNotificationsError": "Error al eliminar notificaciones"
+        "deleteNotificationsError": "Error al eliminar las notificaciones"
+    },
+    "deleteUser": {
+        "userNotFound": "Usuario no encontrado",
+        "success": "Usuario y todos los datos relacionados eliminados con éxito",
+        "error": "Se produjo un error al eliminar el usuario"
+    },
+    "notification": {
+        "title": "¡Bienvenido a SnapEstate !"
     },
     "welcome": {
         "title": "¡Bienvenido a SnapEstate !"

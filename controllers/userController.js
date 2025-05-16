@@ -12,6 +12,8 @@ const accountMail = require("../utils/sendEmail");
 const Notification = require('../models/Notification.js');
 const i18next =require("../config/i18n.js")
 const appleSignin  =require("apple-signin-auth")
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
+const photoModel = require('../models/photoModel');
 
 const normalizePhoneNumber = (phoneNumber) => {
 
@@ -288,7 +290,6 @@ const resetPassword = async (req, res) => {
 
 };
 //Subscription Module
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
 const subscription = async (req, res) => {
   try {
     const userId = groupid; // or any relevant user identifier
@@ -600,4 +601,59 @@ const deleteadminuser = async (req, res) => {
     res.status(500).json({ code: 500, message: 'Error while processing request' });
   }
 };
-module.exports = { userSignUp, userLogin, forgotPassword, VerifyOTP, resetPassword, subscription, find, loginWithGoogle, registerAdmin, dashboard, Loginadmin, allusers, GetUserDetails, GetAllAdmins, edittprofile, searchUsersByName, deleteadminuser,loginWithApple }
+const deleteUser = async (req, res) => {
+  try {
+    const userId = req.params.userId;
+
+    // Check if user exists
+    const user = await userModel.findById(userId);
+    if (!user) {
+      return res.status(404).json({ 
+        code: 404, 
+        message: i18next.t('deleteUser.userNotFound') 
+      });
+    }
+
+    // If user has a Stripe subscription, cancel it
+    if (user.subscription_status === 'active' && user.stripeAccountId) {
+      try {
+        // Cancel any active subscriptions
+        if (user.subscription_id) {
+          await stripe.subscriptions.del(user.subscription_id);
+        }
+        // Delete the customer from Stripe
+        if (user.stripeAccountId) {
+          await stripe.customers.del(user.stripeAccountId);
+        }
+      } catch (stripeError) {
+        console.error('Error canceling Stripe subscription:', stripeError);
+        // Continue with user deletion even if Stripe operations fail
+      }
+    }
+
+    // Delete all user's notifications
+    await Notification.deleteMany({ recipient: userId });
+
+    // Delete all user's photos
+    await photoModel.deleteMany({ userId: userId });
+
+    // Delete any OTP reset records
+    await otpResetModel.deleteMany({ userId: userId });
+
+    // Finally, delete the user
+    await userModel.findByIdAndDelete(userId);
+
+    res.status(200).json({ 
+      code: 200, 
+      message: i18next.t('deleteUser.success') 
+    });
+
+  } catch (error) {
+    console.error('Error deleting user:', error);
+    res.status(500).json({ 
+      code: 500, 
+      message: i18next.t('deleteUser.error') 
+    });
+  }
+};
+module.exports = { userSignUp, userLogin, forgotPassword, VerifyOTP, resetPassword, subscription, find, loginWithGoogle, registerAdmin, dashboard, Loginadmin, allusers, GetUserDetails, GetAllAdmins, edittprofile, searchUsersByName, deleteadminuser, loginWithApple, deleteUser }
