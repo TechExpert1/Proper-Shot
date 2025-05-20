@@ -1,5 +1,5 @@
 const express = require('express')
-const {userLogin, userSignUp, forgotPassword, VerifyOTP, resetPassword ,find,loginWithGoogle,registerAdmin,dashboard,Loginadmin,allusers,GetUserDetails,GetAllAdmins,edittprofile,searchUsersByName,deleteadminuser,loginWithApple, deleteUser  } = require('../controllers/userController');
+const {userLogin, userSignUp, forgotPassword, VerifyOTP, resetPassword ,find,loginWithGoogle,registerAdmin,dashboard,Loginadmin,allusers,GetUserDetails,GetAllAdmins,edittprofile,searchUsersByName,deleteadminuser,loginWithApple, deleteUser, verifyPassword  } = require('../controllers/userController');
 const authorizationMiddleware = require('../middlewares/myAuth');
 // const authorizationMiddleware = require('../middlewares/myAuth');
 // const subscription = require('../controllers/subscriptionController');
@@ -25,6 +25,7 @@ userRouter.put("/edittadmin/:userId",edittprofile)
 userRouter.get("/search",searchUsersByName)
 userRouter.delete("/deleteadmin/:userId",deleteadminuser)
 userRouter.post("/login-with-apple",loginWithApple)
+userRouter.post("/verify-pass",authorizationMiddleware, verifyPassword)
 
 // Delete user and all related data
 userRouter.delete("/delete/:userId", authorizationMiddleware, deleteUser)

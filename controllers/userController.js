@@ -601,6 +601,43 @@ const deleteadminuser = async (req, res) => {
     res.status(500).json({ code: 500, message: 'Error while processing request' });
   }
 };
+
+const verifyPassword = async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    // Check if user exists
+    const user = await userModel.findById(userId);
+    if (!user) {
+      return res.status(404).json({ 
+        code: 404, 
+        message: i18next.t('deleteUser.userNotFound') 
+      });
+    }
+
+    
+    const comparepass = await bcrypt.compare(req.body.password, user.password);
+    if (!comparepass) {
+      return res.status(401).json({
+        code: 401,
+        error: i18next.t("login.invalidPassword"),
+      });
+    }
+
+    res.status(200).json({ 
+      code: 200, 
+      message: i18next.t("login.loginSuccess"),
+
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      code: 500,
+      error: "Error Occurred",
+    });
+  }
+};
+
 const deleteUser = async (req, res) => {
   try {
     const userId = req.params.userId;
@@ -656,4 +693,4 @@ const deleteUser = async (req, res) => {
     });
   }
 };
-module.exports = { userSignUp, userLogin, forgotPassword, VerifyOTP, resetPassword, subscription, find, loginWithGoogle, registerAdmin, dashboard, Loginadmin, allusers, GetUserDetails, GetAllAdmins, edittprofile, searchUsersByName, deleteadminuser, loginWithApple, deleteUser }
+module.exports = { userSignUp, userLogin, forgotPassword, VerifyOTP, resetPassword, subscription, find, loginWithGoogle, registerAdmin, dashboard, Loginadmin, allusers, GetUserDetails, GetAllAdmins, edittprofile, searchUsersByName, deleteadminuser, loginWithApple, deleteUser, verifyPassword }
