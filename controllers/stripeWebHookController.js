@@ -80,7 +80,7 @@ const createSubscription = async (req, res) => {
             return res.status(404).json({ error: 'User not found' });
         }
 
-        if (user.subscId && user.stripeAccountId) {
+        if (user.subscription_id && user.stripeAccountId) {
             return res.status(403).json({ error: 'You already have an active subscription.' });
         }
         let customerId = user.stripeAccountId;
@@ -166,7 +166,7 @@ const confirmPayment = async (req, res) => {
         }
 
         user.subscription_status = 'active';
-        user.subscId = paymentIntent.id;
+        user.subscription_id = paymentIntent.id;
         // user.lastIntent = paymentIntent;
         await user.save();
 
