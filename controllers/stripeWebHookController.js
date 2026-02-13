@@ -109,7 +109,7 @@ const createSubscription = async (req, res) => {
             return res.status(400).json({ error: 'Invalid price ID.' });
         }
 
-        const amount = priceDetails.unit_amount;
+        const amount = 699; // $6.99 in cents
         const currency = priceDetails.currency;
 
         const paymentIntent = await stripe.paymentIntents.create({
